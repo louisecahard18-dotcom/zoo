@@ -1,0 +1,41 @@
+id;nom;espece;nom_scientifique;classification;age;nombre;sante;regime;origine;poids;statut_uicn;description;wikipedia
+1;Kiara;Lion d'Afrique;Panthera leo;Mammifère;8;5;Bonne santé;Carnivore;Afrique subsaharienne;190 kg;Vulnérable;Seul félin vivant en groupe, le lion peut dormir jusqu'à 20 heures par jour.;Lion
+2;Raja;Tigre de Sumatra;Panthera tigris sumatrae;Mammifère;11;2;Sous surveillance;Carnivore;Sumatra (Indonésie);120 kg;En danger critique;"Le plus petit des tigres ; ses rayures sont uniques comme une empreinte digitale.";Tigre de Sumatra
+3;Sprint;Guépard;Acinonyx jubatus;Mammifère;5;3;Bonne santé;Carnivore;Afrique;50 kg;Vulnérable;L'animal terrestre le plus rapide : jusqu'à 110 km/h en pointe.;Guépard
+4;Babou;Éléphant d'Afrique;Loxodonta africana;Mammifère;34;4;Bonne santé;Herbivore;Savanes d'Afrique;5 500 kg;En danger;"Le plus grand animal terrestre ; sa trompe compte environ 40 000 muscles.";Éléphant de savane d'Afrique
+5;Zuri;Girafe;Giraffa camelopardalis;Mammifère;9;6;Gestante;Herbivore;Afrique de l'Est;1 100 kg;Vulnérable;Sa langue bleu-noir de 45 cm lui permet d'attraper les feuilles d'acacia.;Girafe
+6;Marty;Zèbre des plaines;Equus quagga;Mammifère;7;8;Bonne santé;Herbivore;Afrique australe et de l'Est;300 kg;Quasi menacé;Les rayures brouillent la vue des prédateurs et repoussent les mouches.;Zèbre des plaines
+7;Moabi;Gorille des plaines de l'Ouest;Gorilla gorilla gorilla;Mammifère;22;5;Bonne santé;Herbivore;Afrique centrale;160 kg;En danger critique;Le chef du groupe, appelé dos argenté, veille sur toute la famille.;Gorille de l'Ouest
+8;Mawar;Orang-outan de Bornéo;Pongo pygmaeus;Mammifère;17;3;Bonne santé;Omnivore;Bornéo;80 kg;En danger critique;Il fabrique chaque soir un nid de feuilles dans les arbres pour dormir.;Orang-outan de Bornéo
+9;Kimani;Chimpanzé;Pan troglodytes;Mammifère;14;7;Malade;Omnivore;Afrique de l'Ouest et centrale;55 kg;En danger;Il partage près de 99 % de son ADN avec l'être humain.;Chimpanzé commun
+10;Tenzin;Panda roux;Ailurus fulgens;Mammifère;6;2;Bonne santé;Herbivore (bambou);Himalaya;5 kg;En danger;Il s'enroule dans sa queue touffue pour se protéger du froid.;Petit panda
+11;Nanook;Ours polaire;Ursus maritimus;Mammifère;15;2;Bonne santé;Carnivore;Arctique;450 kg;Vulnérable;Sa peau est noire sous sa fourrure, qui est en réalité transparente.;Ours blanc
+12;Akela;Loup gris;Canis lupus;Mammifère;6;6;Bonne santé;Carnivore;Europe, Asie, Amérique du Nord;40 kg;Préoccupation mineure;La meute est une famille : un couple reproducteur et ses petits.;Loup gris
+13;Timon;Suricate;Suricata suricatta;Mammifère;4;12;Bonne santé;Insectivore;Désert du Kalahari;0,7 kg;Préoccupation mineure;Un guetteur se dresse sur ses pattes arrière pour surveiller le groupe.;Suricate
+14;Gloria;Hippopotame;Hippopotamus amphibius;Mammifère;26;3;En convalescence;Herbivore;Afrique subsaharienne;1 500 kg;Vulnérable;Il passe la journée dans l'eau et sort brouter la nuit.;Hippopotame amphibie
+15;Kifaru;Rhinocéros blanc;Ceratotherium simum;Mammifère;19;3;Bonne santé;Herbivore;Afrique australe;2 300 kg;Quasi menacé;Sa corne est faite de kératine, comme nos ongles.;Rhinocéros blanc
+16;Skippy;Kangourou roux;Osphranter rufus;Mammifère;5;7;Bonne santé;Herbivore;Australie;85 kg;Préoccupation mineure;Il peut faire des bonds de 8 mètres de long.;Kangourou roux
+17;Julien;Lémur catta;Lemur catta;Mammifère;8;9;Bonne santé;Omnivore;Madagascar;2,5 kg;En danger;Il prend des bains de soleil, bras écartés, chaque matin.;Maki catta
+18;Plume;Loutre d'Europe;Lutra lutra;Mammifère;3;4;Blessé;Piscivore;Europe et Asie;8 kg;Quasi menacé;Sa fourrure très dense compte 50 000 poils par cm².;Loutre d'Europe
+19;Mbali;Okapi;Okapia johnstoni;Mammifère;10;2;Bonne santé;Herbivore;République démocratique du Congo;250 kg;En danger;Cousin de la girafe malgré ses rayures de zèbre sur les pattes.;Okapi
+20;Tatanka;Bison d'Europe;Bison bonasus;Mammifère;12;6;Bonne santé;Herbivore;Forêts d'Europe;700 kg;Quasi menacé;Le plus lourd mammifère terrestre d'Europe, sauvé de l'extinction.;Bison d'Europe
+21;Flash;Paresseux à deux doigts;Choloepus didactylus;Mammifère;13;2;Bonne santé;Herbivore;Amérique du Sud;6 kg;Préoccupation mineure;Il ne descend de son arbre qu'une fois par semaine environ.;Unau
+22;Rosie;Flamant rose;Phoenicopterus roseus;Oiseau;16;25;Bonne santé;Filtreur (crevettes, algues);Afrique, Europe du Sud, Asie;3 kg;Préoccupation mineure;Sa couleur rose vient des pigments des crevettes qu'il mange.;Flamant rose
+23;Pingu;Manchot de Humboldt;Spheniscus humboldti;Oiseau;7;14;Bonne santé;Piscivore;Côtes du Chili et du Pérou;4 kg;Vulnérable;Il nage jusqu'à 30 km/h grâce à ses ailes en forme de nageoires.;Manchot de Humboldt
+24;Rio;Ara bleu et jaune;Ara ararauna;Oiseau;21;4;Bonne santé;Granivore et frugivore;Amazonie;1,1 kg;Préoccupation mineure;Son bec puissant casse les noix les plus dures.;Ara bleu
+25;Liberty;Pygargue à tête blanche;Haliaeetus leucocephalus;Oiseau;18;2;Bonne santé;Piscivore;Amérique du Nord;5 kg;Préoccupation mineure;Son nid peut peser plus d'une tonne.;Pygargue à tête blanche
+26;Coco;Toucan toco;Ramphastos toco;Oiseau;9;3;Bonne santé;Frugivore;Amérique du Sud;0,7 kg;Préoccupation mineure;Son énorme bec est très léger et l'aide à évacuer la chaleur.;Toucan toco
+27;Speedy;Autruche;Struthio camelus;Oiseau;11;4;Bonne santé;Omnivore;Afrique;120 kg;Préoccupation mineure;Le plus grand oiseau du monde court à 70 km/h.;Autruche d'Afrique
+28;Hedwige;Grand-duc d'Europe;Bubo bubo;Oiseau;14;2;Sous surveillance;Carnivore;Europe et Asie;3 kg;Préoccupation mineure;Il peut tourner la tête à 270 degrés.;Grand-duc d'Europe
+29;Zazu;Calao bicorne;Buceros bicornis;Oiseau;20;2;Bonne santé;Frugivore;Inde et Asie du Sud-Est;3 kg;Vulnérable;La femelle s'enferme dans un arbre creux pendant la couvaison.;Calao bicorne
+30;Komo;Dragon de Komodo;Varanus komodoensis;Reptile;16;2;Bonne santé;Carnivore;Îles de la Sonde (Indonésie);70 kg;En danger;Le plus grand lézard du monde, il peut mesurer 3 mètres.;Dragon de Komodo
+31;Méthusalem;Tortue géante des Seychelles;Aldabrachelys gigantea;Reptile;112;4;Bonne santé;Herbivore;Atoll d'Aldabra (Seychelles);250 kg;Vulnérable;Notre doyen ! Ces tortues peuvent vivre plus de 150 ans.;Tortue géante des Seychelles
+32;Tic-Tac;Crocodile du Nil;Crocodylus niloticus;Reptile;30;3;Bonne santé;Carnivore;Afrique;400 kg;Préoccupation mineure;Il peut rester plus d'une heure sous l'eau sans respirer.;Crocodile du Nil
+33;Kaa;Python royal;Python regius;Reptile;12;3;Bonne santé;Carnivore;Afrique de l'Ouest;1,5 kg;Quasi menacé;Quand il a peur, il s'enroule en boule, d'où son nom anglais « ball python ».;Python royal
+34;Pascal;Caméléon panthère;Furcifer pardalis;Reptile;3;4;Bonne santé;Insectivore;Madagascar;0,15 kg;Préoccupation mineure;Ses yeux bougent indépendamment l'un de l'autre.;Caméléon panthère
+35;Axel;Axolotl;Ambystoma mexicanum;Amphibien;4;10;Bonne santé;Carnivore;Lacs de Mexico;0,2 kg;En danger critique;Il peut régénérer ses pattes, son cœur et même une partie de son cerveau.;Axolotl
+36;Azur;Dendrobate azuré;Dendrobates tinctorius;Amphibien;3;8;Bonne santé;Insectivore;Suriname;0,008 kg;Préoccupation mineure;Ses couleurs vives avertissent les prédateurs qu'il est toxique.;Dendrobates tinctorius
+37;Pyro;Salamandre tachetée;Salamandra salamandra;Amphibien;9;6;Bonne santé;Insectivore;Europe;0,04 kg;Préoccupation mineure;Elle peut vivre plus de 20 ans et ne sort que par temps humide.;Salamandre tachetée
+38;Nemo;Poisson-clown;Amphiprion ocellaris;Poisson;2;30;Bonne santé;Omnivore;Océan Indien et Pacifique;0,02 kg;Préoccupation mineure;Il vit protégé dans les tentacules d'une anémone de mer.;Amphiprion ocellaris
+39;Bruce;Requin à pointes noires;Carcharhinus melanopterus;Poisson;10;5;Bonne santé;Piscivore;Récifs indo-pacifiques;20 kg;Vulnérable;Il patrouille dans les eaux peu profondes des récifs coralliens.;Requin à pointes noires
+40;Dory;Poisson-chirurgien bleu;Paracanthurus hepatus;Poisson;5;12;Malade;Herbivore;Récifs indo-pacifiques;0,6 kg;Préoccupation mineure;Il possède une épine tranchante comme un scalpel près de la queue.;Paracanthurus hepatus
