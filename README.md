@@ -21,7 +21,7 @@ Seul Tkinter est nécessaire. Modules facultatifs :
 1. **Page de garde** : remerciements, « Donner mon avis », « Voir les animaux », accès administrateur.
 2. **Saisie** : nom, prénom, genre, tranche d'âge, pays, région, nombre de personnes, date, 3 notes (étoiles de 1 à 5). Tout est vérifié avant l'enregistrement.
 3. **Liste des animaux** : 40 animaux (photo, nom, espèce, état de santé), filtres par classification et par état de santé.
-6. **Connexion administrateur** : identifiant et mot de passe (blocage de 30 s après 3 erreurs).
+6. **Connexion administrateur** : identifiant et mot de passe.
 7. **Interface administrateur**, avec 3 onglets :
    * *Fiches animaux* : modification du nom, de l'espèce, de l'âge, de la classification, du nombre et de l'état de santé ; signalement d'une naissance ;
    * *Statistiques* : graphiques tirés des CSV des visiteurs ;

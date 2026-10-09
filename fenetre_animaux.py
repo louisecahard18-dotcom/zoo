@@ -6,9 +6,9 @@ from tkinter import ttk
 from donnees import CLASSIFICATIONS, ETATS_SANTE
 from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
                    SOUS_TITRE, TEXTE, GRAS, PETIT, Bouton, carte,
-                   ZoneDefilante, vignette_animal, pastille_sante)
+                   vignette_animal, pastille_sante)
 
-LARGEUR_CARTE = 200      # largeur d'une carte animal (en pixels, marges comprises)
+NB_COLONNES = 5          # nombre de cartes par ligne
 TOUS = "Tous"
 TOUS_ETATS = "Tous les états"
 
@@ -24,7 +24,6 @@ class FenetreAnimaux(tk.Frame):
         super().__init__(app, bg=BEIGE)
         self.app = app
         self.classe_choisie = TOUS
-        self.nb_colonnes = 0
 
         # --- En-tête ---------------------------------------------------------
         entete = tk.Frame(self, bg=VERT_PALE)
@@ -60,11 +59,25 @@ class FenetreAnimaux(tk.Frame):
         self.compteur = tk.Label(self, font=PETIT, bg=BEIGE, fg=NOIR, anchor="w")
         self.compteur.pack(fill="x", padx=22)
 
-        # --- Grille défilante ------------------------------------------------
-        self.zone = ZoneDefilante(self)
-        self.zone.pack(fill="both", expand=True, padx=14, pady=(4, 12))
-        # On recalcule le nombre de colonnes quand la fenêtre change de taille
-        self.zone.canvas.bind("<Configure>", self.redimensionner, add="+")
+        # --- Zone qui défile : un Canvas qui contient un Frame (la grille) ----
+        cadre = tk.Frame(self, bg=BEIGE)
+        cadre.pack(fill="both", expand=True, padx=14, pady=(4, 12))
+        self.canvas = tk.Canvas(cadre, bg=BEIGE, highlightthickness=0)
+        barre = ttk.Scrollbar(cadre, orient="vertical", command=self.canvas.yview)
+        self.canvas.config(yscrollcommand=barre.set)
+        barre.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        self.grille = tk.Frame(self.canvas, bg=BEIGE)
+        id_grille = self.canvas.create_window(0, 0, window=self.grille, anchor="nw")
+        # La zone à faire défiler correspond à la taille de la grille
+        self.grille.bind("<Configure>",
+                         lambda e: self.canvas.config(scrollregion=self.canvas.bbox("all")))
+        # La grille prend toute la largeur du Canvas
+        self.canvas.bind("<Configure>",
+                         lambda e: self.canvas.itemconfig(id_grille, width=e.width))
+        # La molette de la souris fait défiler la liste
+        self.bind_all("<MouseWheel>", self.molette)
 
         self.choisir_classe(TOUS)
 
@@ -74,11 +87,17 @@ class FenetreAnimaux(tk.Frame):
         self.classe_choisie = classe
         self.afficher_grille()
 
-    def redimensionner(self, event):
-        colonnes = max(1, event.width // LARGEUR_CARTE)
-        if colonnes != self.nb_colonnes:
-            self.nb_colonnes = colonnes
-            self.afficher_grille()
+    def molette(self, event):
+        """Fait défiler la liste (event.delta > 0 quand on tourne la molette vers le haut)."""
+        if event.delta > 0:
+            self.canvas.yview_scroll(-1, "units")
+        else:
+            self.canvas.yview_scroll(1, "units")
+
+    def destroy(self):
+        # Quand on quitte la page, on arrête d'écouter la molette
+        self.unbind_all("<MouseWheel>")
+        super().destroy()
 
     def animaux_filtres(self):
         classe = None if self.classe_choisie == TOUS else self.classe_choisie
@@ -87,28 +106,27 @@ class FenetreAnimaux(tk.Frame):
 
     def afficher_grille(self):
         """(Re)construit la grille de cartes selon les filtres choisis."""
-        for widget in self.zone.interieur.winfo_children():
+        for widget in self.grille.winfo_children():
             widget.destroy()
 
         animaux = self.animaux_filtres()
         titre = PLURIELS.get(self.classe_choisie, "Tous les animaux")
         self.compteur.config(text=f"{titre} : {len(animaux)} animal(aux) affiché(s)")
         if not animaux:
-            tk.Label(self.zone.interieur, text="Aucun animal ne correspond à ces filtres.",
+            tk.Label(self.grille, text="Aucun animal ne correspond à ces filtres.",
                      font=TEXTE, bg=BEIGE, fg=NOIR).grid(row=0, column=0, pady=40, padx=20)
             return
 
-        colonnes = max(1, self.nb_colonnes)
-        for col in range(colonnes):
-            self.zone.interieur.columnconfigure(col, weight=1)
+        for col in range(NB_COLONNES):
+            self.grille.columnconfigure(col, weight=1)
         for i, animal in enumerate(animaux):
             c = self.creer_carte(animal)
-            c.grid(row=i // colonnes, column=i % colonnes, padx=6, pady=6, sticky="n")
-        self.zone.remonter()
+            c.grid(row=i // NB_COLONNES, column=i % NB_COLONNES, padx=4, pady=6, sticky="n")
+        self.canvas.yview_moveto(0)          # on revient en haut de la liste
 
     def creer_carte(self, animal):
         """Crée la carte d'un animal : photo, nom, espèce et état de santé."""
-        c = carte(self.zone.interieur, padx=6, pady=6, cursor="hand2")
+        c = carte(self.grille, padx=6, pady=6, cursor="hand2")
         vignette_animal(c, animal).pack()
         tk.Label(c, text=animal.nom, font=GRAS, bg=CREME, fg=NOIR).pack(pady=(6, 0))
         tk.Label(c, text=animal.espece, font=PETIT, bg=CREME, fg=NOIR,

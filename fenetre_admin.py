@@ -20,9 +20,6 @@ try:
 except ImportError:
     MATPLOTLIB = False
 
-ESSAIS_MAX = 3              # nombre d'essais avant blocage temporaire
-DUREE_BLOCAGE = 30          # en secondes
-
 
 # ============================================================================
 # Fenêtre 6 : connexion
@@ -33,7 +30,6 @@ class FenetreConnexion(tk.Frame):
     def __init__(self, app):
         super().__init__(app, bg=BEIGE)
         self.app = app
-        self.essais = 0
 
         tk.Frame(self, bg=VERT_CLAIR, height=14).pack(fill="x")
 
@@ -76,25 +72,12 @@ class FenetreConnexion(tk.Frame):
         self.mot_de_passe.config(show="" if self.voir.get() else "•")
 
     def connexion(self):
-        if self.essais >= ESSAIS_MAX:
-            return                                    # connexion bloquée
         utilisateur = self.utilisateur.get().strip().lower()
         if verifier_identifiants(utilisateur, self.mot_de_passe.get()):
             self.app.afficher_admin(utilisateur)
-            return
-
-        self.essais += 1
-        self.mot_de_passe.delete(0, "end")
-        if self.essais < ESSAIS_MAX:
-            self.message.config(text=f"Identifiants incorrects "
-                                     f"({ESSAIS_MAX - self.essais} essai(s) restant(s)).")
         else:
-            self.message.config(text=f"Trop d'essais : réessayez dans {DUREE_BLOCAGE} s.")
-            self.after(DUREE_BLOCAGE * 1000, self.debloquer)
-
-    def debloquer(self):
-        self.essais = 0
-        self.message.config(text="Vous pouvez réessayer.")
+            self.mot_de_passe.delete(0, "end")
+            self.message.config(text="Identifiant ou mot de passe incorrect.")
 
 
 # ============================================================================

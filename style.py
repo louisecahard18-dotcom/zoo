@@ -138,53 +138,6 @@ class NoteEtoiles(tk.Frame):
                                   "Bien", "Excellent"][n])
 
 
-class ZoneDefilante(tk.Frame):
-    """
-    Cadre avec barre de défilement verticale. Les widgets doivent être placés
-    dans self.interieur. Gère la molette de la souris (Windows, macOS, Linux).
-    """
-
-    def __init__(self, parent, fond=BEIGE):
-        super().__init__(parent, bg=fond)
-        self.canvas = tk.Canvas(self, bg=fond, highlightthickness=0)
-        barre = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
-        self.canvas.configure(yscrollcommand=barre.set)
-        barre.pack(side="right", fill="y")
-        self.canvas.pack(side="left", fill="both", expand=True)
-
-        self.interieur = tk.Frame(self.canvas, bg=fond)
-        self.fenetre_id = self.canvas.create_window((0, 0), window=self.interieur,
-                                                    anchor="nw")
-        self.interieur.bind("<Configure>", lambda e: self.canvas.configure(
-            scrollregion=self.canvas.bbox("all")))
-        self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfigure(
-            self.fenetre_id, width=e.width))
-        # La molette n'est active que lorsque la souris est au-dessus de la zone
-        self.canvas.bind("<Enter>", self.activer_molette)
-        self.canvas.bind("<Leave>", self.desactiver_molette)
-
-    def activer_molette(self, event=None):
-        self.canvas.bind_all("<MouseWheel>", self.molette)
-        self.canvas.bind_all("<Button-4>", lambda e: self.canvas.yview_scroll(-1, "units"))
-        self.canvas.bind_all("<Button-5>", lambda e: self.canvas.yview_scroll(1, "units"))
-
-    def desactiver_molette(self, event=None):
-        for sequence in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
-            self.canvas.unbind_all(sequence)
-
-    def molette(self, event):
-        # Sous Windows delta vaut ±120 par cran, sous macOS ±1
-        pas = -1 if event.delta > 0 else 1
-        self.canvas.yview_scroll(pas, "units")
-
-    def remonter(self):
-        self.canvas.yview_moveto(0)
-
-    def destroy(self):
-        self.desactiver_molette()
-        super().destroy()
-
-
 # ----------------------------------------------------------------------------
 # Dessins (logo et vignettes d'animaux)
 # ----------------------------------------------------------------------------
