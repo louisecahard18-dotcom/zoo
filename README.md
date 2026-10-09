@@ -20,11 +20,10 @@ Seul Tkinter est nécessaire. Modules facultatifs :
 
 1. **Page de garde** : remerciements, « Donner mon avis », « Voir les animaux », accès administrateur.
 2. **Saisie** : nom, prénom, genre, tranche d'âge, pays, région, nombre de personnes, date, 3 notes (étoiles de 1 à 5). Tout est vérifié avant l'enregistrement.
-3. **Liste des animaux** : 40 animaux (photo, nom, espèce, état de santé), filtres par classification et par état de santé, recherche par nom.
-6. **Connexion administrateur** : identifiant, mot de passe, code commande facultatif (blocage de 30 s après 3 erreurs).
-7. **Interface administrateur**, avec 4 onglets :
+3. **Liste des animaux** : 40 animaux (photo, nom, espèce, état de santé), filtres par classification et par état de santé.
+6. **Connexion administrateur** : identifiant et mot de passe (blocage de 30 s après 3 erreurs).
+7. **Interface administrateur**, avec 3 onglets :
    * *Fiches animaux* : modification du nom, de l'espèce, de l'âge, de la classification, du nombre et de l'état de santé ; signalement d'une naissance ;
-   * *Codes commandes* : console (voir ci-dessous) ;
    * *Statistiques* : graphiques tirés des CSV des visiteurs ;
    * *Mails envoyés* : journal des mails automatiques aux parrains.
 
@@ -39,30 +38,6 @@ sur un animal affiche un aperçu provisoire (`ouvrir_fiche()` dans `main.py`).
 | `soigneur`  | `girafe`     |
 
 Seule l'empreinte SHA-256 des mots de passe est stockée (`donnees.py`).
-
-## Codes commandes
-
-Les mots sont séparés par `/`. Ni les majuscules ni les accents ne comptent.
-
-```
-aide                                   liste de toutes les commandes
-liste   |   liste/oiseaux              liste des animaux
-afficher/Kiara                         fiche complète
-modifier/sante/Kiara/malade            état de santé (mail aux parrains)
-modifier/age/Timon/5
-modifier/nombre/Nemo/32
-modifier/classification/Axel/amphibien
-modifier/nom/Rio/Blu
-naissance/Zuri   |   naissance/Zuri/2  naissance (mail aux parrains)
-malades                                animaux qui ne sont pas en bonne santé
-ajouter/Pumba/Phacochère/mammifère/4/2
-supprimer/Pumba/confirmer
-parrains/Kiara                         e-mails des parrains
-stats                                  résumé des avis
-```
-
-Un code tapé dans le champ « Code commande » de la page de connexion est
-exécuté dès que l'administrateur est connecté.
 
 ## Fichiers de données (`data/`)
 
@@ -101,7 +76,6 @@ dessinée à la place. On peut aussi déposer ses propres images PNG de
 |-------------------------|--------------------------------------------------------|
 | `main.py`               | fenêtre principale et navigation                       |
 | `donnees.py`            | classes `Animal` et `Zoo`, lecture/écriture des CSV, mails |
-| `commandes.py`          | interpréteur des codes commandes                       |
 | `statistiques.py`       | graphiques matplotlib                                  |
 | `style.py`              | couleurs, polices, widgets personnalisés               |
 | `fenetre_accueil.py`    | fenêtre 1                                              |

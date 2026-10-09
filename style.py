@@ -11,7 +11,6 @@ from tkinter import ttk
 # Couleurs
 # ----------------------------------------------------------------------------
 VERT_FONCE = "#3E6B48"     # bordures, logo, détails
-VERT = "#7FAE7F"           # survol des boutons
 VERT_CLAIR = "#A9CBA4"     # boutons
 VERT_PALE = "#D7E7D0"      # fonds de bandeaux
 BEIGE = "#F3ECDC"          # fond des fenêtres
@@ -49,7 +48,6 @@ TEXTE = (POLICE, 12)
 GRAS = (POLICE, 12, "bold")
 PETIT = (POLICE, 10)
 PETIT_GRAS = (POLICE, 10, "bold")
-CONSOLE = ("Courier", 11)
 
 
 def configurer_ttk(fenetre):
@@ -89,23 +87,12 @@ class Bouton(tk.Label):
     tk.Button car, sous macOS, tk.Button ignore la couleur de fond.
     """
 
-    def __init__(self, parent, texte, commande, couleur=VERT_CLAIR,
-                 survol=VERT, police=GRAS, **options):
+    def __init__(self, parent, texte, commande, couleur=VERT_CLAIR, police=GRAS, **options):
         super().__init__(parent, text=texte, bg=couleur, fg=NOIR, font=police,
                          padx=18, pady=8, cursor="hand2",
                          highlightthickness=1, highlightbackground=VERT_FONCE,
                          **options)
-        self.commande = commande
-        self.couleur = couleur
-        self.survol = survol
-        self.bind("<Enter>", lambda e: self.config(bg=self.survol))
-        self.bind("<Leave>", lambda e: self.config(bg=self.couleur))
-        self.bind("<Button-1>", lambda e: self.commande())
-
-    def changer_couleur(self, couleur):
-        """Change la couleur au repos (utile pour les boutons de filtre actifs)."""
-        self.couleur = couleur
-        self.config(bg=couleur)
+        self.bind("<Button-1>", lambda e: commande())
 
 
 def carte(parent, **options):
@@ -134,8 +121,6 @@ class NoteEtoiles(tk.Frame):
             lbl = tk.Label(self, text="☆", font=(POLICE, 22), bg=fond,
                            fg=ETOILE, cursor="hand2")
             lbl.pack(side="left")
-            lbl.bind("<Enter>", lambda e, n=i: self.colorier(n))
-            lbl.bind("<Leave>", lambda e: self.colorier(self.note))
             lbl.bind("<Button-1>", lambda e, n=i: self.choisir(n))
             self.etoiles.append(lbl)
         self.legende = tk.Label(self, text="", font=PETIT, bg=fond, fg=NOIR, width=12,

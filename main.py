@@ -63,8 +63,8 @@ class ApplicationZoo(tk.Tk):
     def afficher_connexion(self):
         self.changer_page(FenetreConnexion)
 
-    def afficher_admin(self, utilisateur, code_commande=""):
-        self.changer_page(FenetreAdmin, utilisateur, code_commande)
+    def afficher_admin(self, utilisateur):
+        self.changer_page(FenetreAdmin, utilisateur)
 
     def ouvrir_fiche(self, animal):
         """Fenêtre 4 (fiche animal) : à développer. Aperçu provisoire en attendant."""

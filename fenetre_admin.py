@@ -3,13 +3,12 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-import commandes
 from donnees import (CLASSIFICATIONS, ETATS_SANTE, FICHIER_VISITEURS, FICHIER_SATISFACTION,
                      FICHIER_PARRAINAGES, lire_csv, lire_journal_mails,
                      verifier_identifiants)
 from statistiques import GRAPHIQUES
-from style import (BEIGE, CREME, NOIR, VERT, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
-                   SOUS_TITRE, TEXTE, GRAS, PETIT, PETIT_GRAS, CONSOLE, POLICE,
+from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
+                   SOUS_TITRE, TEXTE, GRAS, PETIT, PETIT_GRAS, POLICE,
                    Bouton, carte, champ_texte, vignette_animal)
 
 # matplotlib sert à tracer les graphiques. S'il n'est pas installé,
@@ -29,7 +28,7 @@ DUREE_BLOCAGE = 30          # en secondes
 # Fenêtre 6 : connexion
 # ============================================================================
 class FenetreConnexion(tk.Frame):
-    """Demande l'identifiant, le mot de passe et, facultativement, un code commande."""
+    """Demande l'identifiant et le mot de passe."""
 
     def __init__(self, app):
         super().__init__(app, bg=BEIGE)
@@ -49,10 +48,8 @@ class FenetreConnexion(tk.Frame):
 
         self.utilisateur = champ_texte(boite)
         self.mot_de_passe = champ_texte(boite, show="•")
-        self.code = champ_texte(boite)
         for rang, (texte, champ) in enumerate([("Utilisateur", self.utilisateur),
-                                               ("Mot de passe", self.mot_de_passe),
-                                               ("Code commande", self.code)], start=2):
+                                               ("Mot de passe", self.mot_de_passe)], start=2):
             tk.Label(boite, text=texte, font=TEXTE, bg=CREME, fg=NOIR).grid(
                 row=rang, column=0, sticky="w", pady=6, padx=(0, 14))
             champ.grid(row=rang, column=1, pady=6)
@@ -60,22 +57,18 @@ class FenetreConnexion(tk.Frame):
         self.voir = tk.BooleanVar()
         ttk.Checkbutton(boite, text="Afficher le mot de passe", variable=self.voir,
                         command=self.basculer_mdp).grid(row=5, column=1, sticky="w")
-        tk.Label(boite, font=PETIT, bg=CREME, fg=NOIR, justify="left",
-                 text="Code commande (facultatif) : exécuté dès la connexion,\n"
-                      "ex. modifier/sante/Kiara/malade  —  tapez « aide » pour la liste."
-                 ).grid(row=6, column=0, columnspan=2, sticky="w", pady=(12, 0))
 
         boutons = tk.Frame(boite, bg=CREME)
-        boutons.grid(row=7, column=0, columnspan=2, pady=(22, 0), sticky="ew")
+        boutons.grid(row=6, column=0, columnspan=2, pady=(22, 0), sticky="ew")
         Bouton(boutons, "←  Retour", app.afficher_accueil, couleur=BEIGE_FONCE).pack(side="left")
         self.bouton_connexion = Bouton(boutons, "Se connecter", self.connexion)
         self.bouton_connexion.pack(side="right")
 
         self.message = tk.Label(boite, text="", font=PETIT_GRAS, bg=CREME, fg=NOIR)
-        self.message.grid(row=8, column=0, columnspan=2, pady=(12, 0))
+        self.message.grid(row=7, column=0, columnspan=2, pady=(12, 0))
 
         # La touche Entrée valide le formulaire
-        for champ in (self.utilisateur, self.mot_de_passe, self.code):
+        for champ in (self.utilisateur, self.mot_de_passe):
             champ.bind("<Return>", lambda e: self.connexion())
         self.utilisateur.focus_set()
 
@@ -87,7 +80,7 @@ class FenetreConnexion(tk.Frame):
             return                                    # connexion bloquée
         utilisateur = self.utilisateur.get().strip().lower()
         if verifier_identifiants(utilisateur, self.mot_de_passe.get()):
-            self.app.afficher_admin(utilisateur, self.code.get().strip())
+            self.app.afficher_admin(utilisateur)
             return
 
         self.essais += 1
@@ -108,16 +101,14 @@ class FenetreConnexion(tk.Frame):
 # Fenêtre 7 : interface d'administration
 # ============================================================================
 class FenetreAdmin(tk.Frame):
-    """Modification des fiches animaux, codes commandes, statistiques et mails."""
+    """Modification des fiches animaux, statistiques et mails."""
 
-    def __init__(self, app, utilisateur, code_initial=""):
+    def __init__(self, app, utilisateur):
         super().__init__(app, bg=BEIGE)
         self.app = app
         self.zoo = app.zoo
         self.animal = None                 # animal actuellement sélectionné
         self.animaux_affiches = []         # animaux visibles dans la liste (même ordre)
-        self.historique = []               # codes commandes déjà tapés
-        self.position_historique = 0
 
         # --- En-tête ---------------------------------------------------------
         entete = tk.Frame(self, bg=VERT_PALE)
@@ -140,28 +131,20 @@ class FenetreAdmin(tk.Frame):
         self.onglets = ttk.Notebook(self)
         self.onglets.pack(fill="both", expand=True, padx=14, pady=10)
         self.onglet_fiches = tk.Frame(self.onglets, bg=BEIGE)
-        self.onglet_console = tk.Frame(self.onglets, bg=BEIGE)
         self.onglet_stats = tk.Frame(self.onglets, bg=BEIGE)
         self.onglet_mails = tk.Frame(self.onglets, bg=BEIGE)
         self.onglets.add(self.onglet_fiches, text="Fiches animaux")
-        self.onglets.add(self.onglet_console, text="Codes commandes")
         self.onglets.add(self.onglet_stats, text="Statistiques")
         self.onglets.add(self.onglet_mails, text="Mails envoyés")
         self.onglets.bind("<<NotebookTabChanged>>", self.changement_onglet)
 
         self.construire_fiches()
-        self.construire_console()
         self.construire_stats()
         self.construire_mails()
 
         self.rafraichir_liste()
         if self.animaux_affiches:
             self.selectionner(self.animaux_affiches[0])
-
-        # Code commande saisi sur la page de connexion
-        if code_initial:
-            self.onglets.select(self.onglet_console)
-            self.executer_commande(code_initial)
 
     # ========================================================================
     # Onglet 1 : fiches animaux
@@ -172,9 +155,6 @@ class FenetreAdmin(tk.Frame):
         gauche.pack(side="left", fill="y", padx=(10, 6), pady=10)
         tk.Label(gauche, text="Choix de l'animal", font=GRAS, bg=CREME,
                  fg=NOIR).pack(anchor="w")
-        self.recherche = tk.StringVar()
-        self.recherche.trace_add("write", lambda *a: self.rafraichir_liste())
-        champ_texte(gauche, largeur=28, textvariable=self.recherche).pack(fill="x", pady=6)
 
         cadre_liste = tk.Frame(gauche, bg=CREME)
         cadre_liste.pack(fill="both", expand=True)
@@ -252,8 +232,8 @@ class FenetreAdmin(tk.Frame):
                couleur=BEIGE_FONCE).pack(side="right", padx=10)
 
     def rafraichir_liste(self):
-        """Remplit la liste de gauche selon la recherche (en gardant la sélection)."""
-        self.animaux_affiches = self.zoo.filtrer(recherche=self.recherche.get())
+        """Remplit la liste de gauche (en gardant l'animal sélectionné)."""
+        self.animaux_affiches = list(self.zoo.animaux)
         self.liste.delete(0, "end")
         for i, a in enumerate(self.animaux_affiches):
             self.liste.insert("end", f" {a.nom}  —  {a.espece}")
@@ -335,68 +315,7 @@ class FenetreAdmin(tk.Frame):
         self.selectionner(animal)
 
     # ========================================================================
-    # Onglet 2 : codes commandes
-    # ========================================================================
-    def construire_console(self):
-        cadre = carte(self.onglet_console, padx=12, pady=12)
-        cadre.pack(fill="both", expand=True, padx=10, pady=10)
-
-        self.sortie = tk.Text(cadre, font=CONSOLE, bg=CREME, fg=NOIR, relief="flat",
-                              wrap="word", state="disabled", padx=8, pady=6)
-        barre = ttk.Scrollbar(cadre, orient="vertical", command=self.sortie.yview)
-        self.sortie.config(yscrollcommand=barre.set)
-
-        bas = tk.Frame(cadre, bg=CREME)
-        bas.pack(side="bottom", fill="x", pady=(10, 0))
-        barre.pack(side="right", fill="y")
-        self.sortie.pack(fill="both", expand=True)
-
-        tk.Label(bas, text="Code >", font=CONSOLE, bg=CREME, fg=NOIR).pack(side="left")
-        self.entree = champ_texte(bas, largeur=60)
-        self.entree.config(font=CONSOLE)
-        self.entree.pack(side="left", fill="x", expand=True, padx=8)
-        self.entree.bind("<Return>", lambda e: self.executer_commande(self.entree.get()))
-        self.entree.bind("<Up>", lambda e: self.parcourir_historique(-1))
-        self.entree.bind("<Down>", lambda e: self.parcourir_historique(1))
-        Bouton(bas, "Exécuter", lambda: self.executer_commande(self.entree.get())).pack(side="left")
-        Bouton(bas, "Aide", lambda: self.executer_commande("aide"),
-               couleur=BEIGE_FONCE).pack(side="left", padx=(8, 0))
-
-        self.ecrire_console("Console des codes commandes du zoo.\n"
-                            "Exemple : modifier/sante/Kiara/malade — tapez « aide » pour "
-                            "voir toutes les commandes. Flèches ↑ ↓ : historique.\n")
-
-    def ecrire_console(self, texte):
-        self.sortie.config(state="normal")
-        self.sortie.insert("end", texte + "\n")
-        self.sortie.config(state="disabled")
-        self.sortie.see("end")
-
-    def executer_commande(self, texte):
-        texte = texte.strip()
-        if not texte:
-            return
-        self.historique.append(texte)
-        self.position_historique = len(self.historique)
-        self.entree.delete(0, "end")
-
-        reponse = commandes.executer(texte, self.zoo)
-        self.ecrire_console(f"> {texte}\n{reponse}\n")
-        self.etat.config(text=reponse.splitlines()[0] if reponse else "")
-        # Les commandes peuvent avoir modifié les animaux : on met à jour l'onglet 1
-        self.selectionner(self.animal)
-
-    def parcourir_historique(self, sens):
-        if not self.historique:
-            return
-        self.position_historique = min(max(self.position_historique + sens, 0),
-                                       len(self.historique))
-        self.entree.delete(0, "end")
-        if self.position_historique < len(self.historique):
-            self.entree.insert(0, self.historique[self.position_historique])
-
-    # ========================================================================
-    # Onglet 3 : statistiques (lecture des CSV)
+    # Onglet 2 : statistiques (lecture des CSV)
     # ========================================================================
     def construire_stats(self):
         self.indicateurs = tk.Frame(self.onglet_stats, bg=BEIGE)
@@ -418,12 +337,10 @@ class FenetreAdmin(tk.Frame):
                           "puis relancez l'application.").pack(expand=True)
             return
 
-        self.boutons_graphes = []
         for titre, fonction in GRAPHIQUES:
             b = Bouton(menu, titre, lambda f=fonction: self.tracer(f), couleur=CREME,
-                       survol=VERT_CLAIR, police=PETIT, width=16)
+                       police=PETIT, width=16)
             b.pack(fill="x", pady=3)
-            self.boutons_graphes.append((b, fonction))
         Bouton(menu, "Actualiser", lambda: self.tracer(self.graphe_actuel),
                couleur=BEIGE_FONCE, police=PETIT).pack(fill="x", pady=(16, 0))
 
@@ -456,8 +373,6 @@ class FenetreAdmin(tk.Frame):
     def tracer(self, fonction):
         """Trace le graphique demandé dans la zone de droite."""
         self.graphe_actuel = fonction
-        for bouton, f in self.boutons_graphes:
-            bouton.changer_couleur(VERT if f is fonction else CREME)
         self.figure.clear()
         ax = self.figure.add_subplot(111)
         if not fonction(ax):
@@ -469,7 +384,7 @@ class FenetreAdmin(tk.Frame):
         self.canvas_graphe.draw()
 
     # ========================================================================
-    # Onglet 4 : journal des mails
+    # Onglet 3 : journal des mails
     # ========================================================================
     def construire_mails(self):
         cadre = carte(self.onglet_mails, padx=12, pady=12)
@@ -481,7 +396,7 @@ class FenetreAdmin(tk.Frame):
                       "ils sont enregistrés dans data/mails_envoyes.txt).").pack(side="left")
         Bouton(haut, "Actualiser", self.maj_mails, couleur=BEIGE_FONCE,
                police=PETIT).pack(side="right")
-        self.texte_mails = tk.Text(cadre, font=CONSOLE, bg=CREME, fg=NOIR, relief="flat",
+        self.texte_mails = tk.Text(cadre, font=("Courier", 11), bg=CREME, fg=NOIR, relief="flat",
                                    wrap="word", padx=8, pady=6)
         barre = ttk.Scrollbar(cadre, orient="vertical", command=self.texte_mails.yview)
         self.texte_mails.config(yscrollcommand=barre.set)
@@ -505,8 +420,6 @@ class FenetreAdmin(tk.Frame):
                 self.tracer(self.graphe_actuel)
         elif onglet is self.onglet_mails:
             self.maj_mails()
-        elif onglet is self.onglet_console:
-            self.entree.focus_set()
 
     def deconnexion(self):
         if messagebox.askyesno("Déconnexion", "Voulez-vous vous déconnecter ?", parent=self):

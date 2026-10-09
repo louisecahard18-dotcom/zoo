@@ -4,8 +4,8 @@ import tkinter as tk
 from tkinter import ttk
 
 from donnees import CLASSIFICATIONS, ETATS_SANTE
-from style import (BEIGE, CREME, NOIR, VERT, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
-                   SOUS_TITRE, TEXTE, GRAS, PETIT, Bouton, carte, champ_texte,
+from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
+                   SOUS_TITRE, TEXTE, GRAS, PETIT, Bouton, carte,
                    ZoneDefilante, vignette_animal, pastille_sante)
 
 LARGEUR_CARTE = 200      # largeur d'une carte animal (en pixels, marges comprises)
@@ -46,18 +46,11 @@ class FenetreAnimaux(tk.Frame):
         for classe in [TOUS] + CLASSIFICATIONS:
             b = Bouton(filtres, PLURIELS.get(classe, classe),
                        lambda c=classe: self.choisir_classe(c),
-                       couleur=CREME, survol=VERT_CLAIR, police=PETIT)
+                       couleur=CREME, police=PETIT)
             b.pack(side="left", padx=(0, 6))
             self.boutons_classes[classe] = b
 
-        # Filtre supplémentaire par état de santé et recherche par nom
-        self.recherche = tk.StringVar()
-        self.recherche.trace_add("write", lambda *args: self.afficher_grille())
-        champ = champ_texte(filtres, largeur=18, textvariable=self.recherche)
-        champ.pack(side="right")
-        tk.Label(filtres, text="Rechercher :", font=PETIT, bg=BEIGE,
-                 fg=NOIR).pack(side="right", padx=(12, 4))
-
+        # Filtre supplémentaire par état de santé
         self.filtre_sante = ttk.Combobox(filtres, values=[TOUS_ETATS] + ETATS_SANTE,
                                          state="readonly", width=16)
         self.filtre_sante.set(TOUS_ETATS)
@@ -77,10 +70,8 @@ class FenetreAnimaux(tk.Frame):
 
     # ------------------------------------------------------------------------
     def choisir_classe(self, classe):
-        """Active un bouton de filtre et met à jour la grille."""
+        """Retient la classification choisie et met à jour la grille."""
         self.classe_choisie = classe
-        for c, bouton in self.boutons_classes.items():
-            bouton.changer_couleur(VERT if c == classe else CREME)
         self.afficher_grille()
 
     def redimensionner(self, event):
@@ -92,7 +83,7 @@ class FenetreAnimaux(tk.Frame):
     def animaux_filtres(self):
         classe = None if self.classe_choisie == TOUS else self.classe_choisie
         sante = None if self.filtre_sante.get() == TOUS_ETATS else self.filtre_sante.get()
-        return self.app.zoo.filtrer(classe, sante, self.recherche.get())
+        return self.app.zoo.filtrer(classe, sante)
 
     def afficher_grille(self):
         """(Re)construit la grille de cartes selon les filtres choisis."""
@@ -100,7 +91,8 @@ class FenetreAnimaux(tk.Frame):
             widget.destroy()
 
         animaux = self.animaux_filtres()
-        self.compteur.config(text=f"{len(animaux)} animal(aux) affiché(s)")
+        titre = PLURIELS.get(self.classe_choisie, "Tous les animaux")
+        self.compteur.config(text=f"{titre} : {len(animaux)} animal(aux) affiché(s)")
         if not animaux:
             tk.Label(self.zone.interieur, text="Aucun animal ne correspond à ces filtres.",
                      font=TEXTE, bg=BEIGE, fg=NOIR).grid(row=0, column=0, pady=40, padx=20)
@@ -117,19 +109,15 @@ class FenetreAnimaux(tk.Frame):
     def creer_carte(self, animal):
         """Crée la carte d'un animal : photo, nom, espèce et état de santé."""
         c = carte(self.zone.interieur, padx=6, pady=6, cursor="hand2")
-        c.config(highlightthickness=2)
         vignette_animal(c, animal).pack()
         tk.Label(c, text=animal.nom, font=GRAS, bg=CREME, fg=NOIR).pack(pady=(6, 0))
         tk.Label(c, text=animal.espece, font=PETIT, bg=CREME, fg=NOIR,
                  wraplength=170).pack()
         pastille_sante(c, animal.sante).pack(pady=(2, 0))
 
-        # Toute la carte (et tout ce qu'elle contient) est cliquable,
-        # avec une bordure verte au survol
+        # Toute la carte (et tout ce qu'elle contient) est cliquable
         def lier(widget):
             widget.bind("<Button-1>", lambda e: self.app.ouvrir_fiche(animal))
-            widget.bind("<Enter>", lambda e: c.config(highlightbackground=VERT))
-            widget.bind("<Leave>", lambda e: c.config(highlightbackground=BEIGE_FONCE))
             for enfant in widget.winfo_children():
                 lier(enfant)
 

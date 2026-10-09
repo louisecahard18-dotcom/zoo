@@ -58,7 +58,3 @@ class FenetreAccueil(tk.Frame):
         tk.Label(centre, font=PETIT, bg=CREME, fg=NOIR,
                  text=f"{nb_especes} espèces · {nb_animaux} pensionnaires · "
                       f"{len(CLASSIFICATIONS)} grandes familles").pack(pady=(24, 0))
-
-        # Pied de page
-        tk.Label(self, text=f"© 2026 {NOM_DU_ZOO} — Ouvert tous les jours de 9 h à 19 h",
-                 font=PETIT, bg=BEIGE, fg=NOIR).pack(side="bottom", pady=10)

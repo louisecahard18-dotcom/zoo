@@ -10,7 +10,6 @@ ce qui permet ensuite de tracer des graphiques.
 import csv
 import os
 import hashlib
-import unicodedata
 from datetime import datetime
 
 # ----------------------------------------------------------------------------
@@ -96,12 +95,6 @@ def verifier_identifiants(utilisateur, mot_de_passe):
 # ----------------------------------------------------------------------------
 # Fonctions utilitaires
 # ----------------------------------------------------------------------------
-def sans_accents(texte):
-    """Met un texte en minuscules et enlève les accents : 'Éléphant' -> 'elephant'."""
-    texte = unicodedata.normalize("NFD", texte.strip().lower())
-    return "".join(c for c in texte if unicodedata.category(c) != "Mn")
-
-
 def lire_csv(fichier):
     """Lit un fichier CSV et renvoie la liste de ses lignes (dictionnaires)."""
     if not os.path.exists(fichier):
@@ -252,36 +245,20 @@ class Zoo:
                    [a.en_dictionnaire() for a in self.animaux])
 
     # --- recherche ----------------------------------------------------------
-    def chercher(self, texte):
-        """
-        Cherche un animal par son nom (ex. « Kiara ») ou son espèce
-        (ex. « lion d'afrique »), sans tenir compte des majuscules ni des
-        accents. Renvoie l'animal trouvé ou None.
-        """
-        cle = sans_accents(texte)
-        for a in self.animaux:
-            if sans_accents(a.nom) == cle:
-                return a
-        for a in self.animaux:
-            if sans_accents(a.espece) == cle:
-                return a
-        return None
-
     def nom_existe(self, nom, sauf=None):
         """Renvoie True si un autre animal (différent de sauf) porte déjà ce nom."""
-        return any(sans_accents(a.nom) == sans_accents(nom) and a is not sauf
-                   for a in self.animaux)
+        for a in self.animaux:
+            if a.nom.lower() == nom.lower() and a is not sauf:
+                return True
+        return False
 
-    def filtrer(self, classification=None, sante=None, recherche=""):
+    def filtrer(self, classification=None, sante=None):
         """Renvoie la liste des animaux correspondant aux filtres donnés."""
-        cle = sans_accents(recherche)
         resultat = []
         for a in self.animaux:
             if classification and a.classification != classification:
                 continue
             if sante and a.sante != sante:
-                continue
-            if cle and cle not in sans_accents(a.nom + " " + a.espece):
                 continue
             resultat.append(a)
         return resultat
@@ -302,7 +279,7 @@ class Zoo:
             envoyer_mail(email, sujet, corps)
         return len(emails)
 
-    # --- modifications (interface admin et codes commandes) -----------------
+    # --- modifications (interface admin) ------------------------------------
     def modifier(self, animal, nouvelles_valeurs):
         """
         Modifie un animal. nouvelles_valeurs est un dictionnaire
@@ -353,9 +330,13 @@ class Zoo:
                 if champ == "age" and propres[champ] > 200:
                     raise ValueError("Un âge supérieur à 200 ans n'est pas réaliste.")
             elif champ == "classification":
-                propres[champ] = trouver_dans_liste(valeur, CLASSIFICATIONS, "classification")
+                if valeur not in CLASSIFICATIONS:
+                    raise ValueError(f"Classification inconnue : « {valeur} ».")
+                propres[champ] = valeur
             elif champ == "sante":
-                propres[champ] = trouver_etat_sante(valeur)
+                if valeur not in ETATS_SANTE:
+                    raise ValueError(f"État de santé inconnu : « {valeur} ».")
+                propres[champ] = valeur
             else:
                 raise ValueError(f"Champ inconnu : « {champ} ».")
         return propres
@@ -376,55 +357,6 @@ class Zoo:
             f"{texte_bebe} chez {animal.nom} ({animal.espece}) !\nLe groupe "
             f"compte désormais {animal.nombre} individus.\n\nMerci pour votre "
             f"parrainage.\n\nL'équipe du {NOM_DU_ZOO}")
-        return [f"Naissance de {texte_bebe} chez {animal.nom} "
+        return [f"Naissance : {texte_bebe} chez {animal.nom} "
                 f"(effectif : {animal.nombre}).",
                 f"Mail envoyé à {n} parrain(s) (naissance)."]
-
-    def ajouter(self, nom, espece, classification, age, nombre):
-        """Ajoute un nouvel animal au zoo et renvoie l'objet créé."""
-        if self.nom_existe(nom):
-            raise ValueError(f"Le nom « {nom} » est déjà utilisé.")
-        ligne = {col: "" for col in COLONNES_ANIMAUX}
-        ligne.update({"id": max((a.id for a in self.animaux), default=0) + 1,
-                      "nom": nom, "espece": espece, "age": 0, "nombre": 1,
-                      "classification": CLASSIFICATIONS[0], "sante": ETATS_SANTE[0]})
-        animal = Animal(ligne)
-        animal.__dict__.update(self.verifier_valeurs(animal, {
-            "classification": classification, "age": age, "nombre": nombre}))
-        self.animaux.append(animal)
-        self.sauvegarder()
-        return animal
-
-    def supprimer(self, animal):
-        self.animaux.remove(animal)
-        self.sauvegarder()
-
-
-# Raccourcis acceptés dans les codes commandes pour l'état de santé
-ALIAS_SANTE = {
-    "bonne": "Bonne santé", "bon": "Bonne santé", "ok": "Bonne santé",
-    "sain": "Bonne santé", "gueri": "Bonne santé",
-    "surveillance": "Sous surveillance", "surveille": "Sous surveillance",
-    "malade": "Malade", "blesse": "Blessé", "blessure": "Blessé",
-    "convalescence": "En convalescence", "convalescent": "En convalescence",
-    "gestante": "Gestante", "enceinte": "Gestante", "gestation": "Gestante",
-}
-
-
-def trouver_dans_liste(valeur, liste, nom_champ):
-    """Renvoie l'élément de liste égal à valeur (sans accents ni majuscules,
-    pluriel accepté) ou lève ValueError."""
-    cle = sans_accents(valeur).rstrip("sx")
-    for element in liste:
-        if sans_accents(element).rstrip("sx") == cle:
-            return element
-    raise ValueError(f"{nom_champ} inconnue : « {valeur} ». "
-                     f"Valeurs possibles : {', '.join(liste)}.")
-
-
-def trouver_etat_sante(valeur):
-    """Convertit 'malade', 'Bonne santé', 'blesse'... en un état de ETATS_SANTE."""
-    cle = sans_accents(valeur)
-    if cle in ALIAS_SANTE:
-        return ALIAS_SANTE[cle]
-    return trouver_dans_liste(valeur, ETATS_SANTE, "État de santé")
