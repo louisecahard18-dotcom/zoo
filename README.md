@@ -37,7 +37,7 @@ sur un animal affiche un aperçu provisoire (`ouvrir_fiche()` dans `main.py`).
 | `admin`     | `zoo2026`    |
 | `soigneur`  | `girafe`     |
 
-Seule l'empreinte SHA-256 des mots de passe est stockée (`donnees.py`).
+Les comptes se modifient dans le dictionnaire `COMPTES_ADMIN` de `donnees.py`.
 
 ## Fichiers de données (`data/`)
 

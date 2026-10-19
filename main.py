@@ -35,7 +35,7 @@ class ApplicationZoo(tk.Tk):
         super().__init__()
         self.title(NOM_DU_ZOO)
         self.geometry("1150x760")
-        self.minsize(1050, 700)
+        self.resizable(False, False)       # taille fixe : la grille a 5 colonnes
         self.configure(bg=BEIGE)
         configurer_ttk(self)
 

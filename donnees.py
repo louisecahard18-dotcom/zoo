@@ -9,7 +9,6 @@ ce qui permet ensuite de tracer des graphiques.
 
 import csv
 import os
-import hashlib
 from datetime import datetime
 
 # ----------------------------------------------------------------------------
@@ -71,25 +70,16 @@ REGIONS = {
 }
 PAYS = list(REGIONS.keys())
 
-# Comptes administrateurs : identifiant -> empreinte SHA-256 du mot de passe.
-# (On ne stocke jamais un mot de passe en clair.)
-#   admin    / zoo2026
-#   soigneur / girafe
+# Comptes administrateurs : identifiant -> mot de passe
 COMPTES_ADMIN = {
-    "admin": "97c98f42e45c974165a9b9677df8bb947edc520e58cd32ecd604f694b7f2e566",
-    "soigneur": "88edae009b37cdab6ac7129ad25457e0a76dcd5a697d73b8bc55584063ab2ad5",
+    "admin": "zoo2026",
+    "soigneur": "girafe",
 }
 
 
-def empreinte(mot_de_passe):
-    """Renvoie l'empreinte SHA-256 (en hexadécimal) d'un mot de passe."""
-    return hashlib.sha256(mot_de_passe.encode("utf-8")).hexdigest()
-
-
 def verifier_identifiants(utilisateur, mot_de_passe):
-    """Renvoie True si le couple identifiant / mot de passe est correct."""
-    attendu = COMPTES_ADMIN.get(utilisateur.strip().lower())
-    return attendu is not None and attendu == empreinte(mot_de_passe)
+    """Renvoie True si l'identifiant existe et que le mot de passe est le bon."""
+    return utilisateur in COMPTES_ADMIN and COMPTES_ADMIN[utilisateur] == mot_de_passe
 
 
 # ----------------------------------------------------------------------------
