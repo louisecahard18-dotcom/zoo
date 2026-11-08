@@ -39,7 +39,9 @@ MOTS_INTERDITS = ["map", "carte", "range", "distribution", "repartition", "statu
                   "timbre", "coin", "fossil", "diagram", "anatomy", "museum", "taxiderm",
                   "mhnt", "mnhn", "buffon", "histoire naturelle", "voyage", "gravure",
                   "engraving", "painting", "peinture", "brockhaus", "prey", "proie", "dead",
-                  "mort", "carcass", "perspective"]
+                  "mort", "carcass", "perspective", "sign", "panneau", "poster", "cave",
+                  "grotte", "stuffed", "empaille", "naturalise", "specimen", "skin", "peau",
+                  "fur", "fourrure", "claw", "griffe", "pattern", "texture"]
 
 
 def telecharger(url):
@@ -84,6 +86,11 @@ def fichiers_de_l_article(titre):
         if element.get("type") == "image":
             noms.append("File:" + element["title"].split(":", 1)[1])
     return noms
+
+
+def fichiers_de_qualite(nom_scientifique):
+    """Photos de l'espèce labellisées « Quality images » sur Commons (vérifiées par des bénévoles)."""
+    return fichiers_commons(f'"{nom_scientifique}" incategory:Quality_images')
 
 
 def fichiers_commons(recherche):
@@ -134,14 +141,6 @@ def est_en_couleur(image):
     return ImageStat.Stat(image.convert("HSV")).mean[1] > 40
 
 
-def photo_de_tete(titre):
-    """Nom du fichier de la photo en tête de l'article (souvent la plus belle)."""
-    url = "https://fr.wikipedia.org/api/rest_v1/page/summary/" + urllib.parse.quote(
-        titre.replace(" ", "_"))
-    source = lire_json(url).get("originalimage", {}).get("source", "")
-    return "File:" + urllib.parse.unquote(source.split("/")[-1]).replace("_", " ")
-
-
 def recadrer(image, taille):
     """Recadre l'image au centre (mêmes proportions que taille) puis la redimensionne."""
     l, h = image.size
@@ -160,6 +159,17 @@ def noter_credit(fichier, info):
     ajouter_ligne_csv(FICHIER_CREDITS, COLONNES_CREDITS, {
         "fichier": fichier, "auteur": info["auteur"], "licence": info["licence"],
         "source": info["source"]})
+
+
+def sans_doublons(candidats):
+    """Enlève les photos en double (même taille et même auteur)."""
+    resultat, vus = [], set()
+    for info in candidats:
+        cle = (info["largeur"], info["hauteur"], info["auteur"])
+        if cle not in vus:
+            vus.add(cle)
+            resultat.append(info)
+    return resultat
 
 
 def choisir(candidats, combien):
@@ -186,8 +196,12 @@ def traiter(animal):
     if complet(animal):
         print(f"[déjà là] {animal.nom}")
         return
-    candidats = [i for i in infos_images(fichiers_de_l_article(animal.wikipedia))
-                 if image_acceptable(i)]
+    # d'abord les photos « Quality images », puis celles de l'article Wikipédia
+    noms = []
+    for nom in fichiers_de_qualite(animal.nom_scientifique) + fichiers_de_l_article(animal.wikipedia):
+        if nom.replace("_", " ") not in [n.replace("_", " ") for n in noms]:
+            noms.append(nom)
+    candidats = sans_doublons([i for i in infos_images(noms) if image_acceptable(i)])
     if len(candidats) < 4:
         noms_vus = {i["nom"] for i in candidats}
         en_plus = [n for n in fichiers_commons(animal.nom_scientifique) if n not in noms_vus]
@@ -196,10 +210,8 @@ def traiter(animal):
         print(f"[pas assez de photos] {animal.nom} : {len(candidats)}")
         return
 
-    # la photo de tête de l'article en premier, puis les photos en format paysage
-    tete = photo_de_tete(animal.wikipedia)
-    candidats.sort(key=lambda i: (i["nom"].replace("_", " ") != tete,
-                                  i["largeur"] < i["hauteur"]))
+    # les photos en format paysage d'abord (la première sert de photo principale)
+    candidats.sort(key=lambda i: i["largeur"] < i["hauteur"])
 
     # on télécharge les images une par une jusqu'à en avoir 4 en couleur,
     # et on n'enregistre rien avant, pour ne jamais garder un animal à moitié fait
