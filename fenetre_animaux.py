@@ -31,7 +31,7 @@ class FenetreAnimaux(tk.Frame):
         tk.Frame(entete, bg=VERT_CLAIR, height=8).pack(fill="x")
         ligne = tk.Frame(entete, bg=VERT_PALE)
         ligne.pack(fill="x", padx=20, pady=10)
-        Bouton(ligne, ", , j Retour", app.afficher_accueil, couleur=BEIGE_FONCE).pack(side="left")
+        Bouton(ligne, "Retour", app.afficher_accueil, couleur=BEIGE_FONCE).pack(side="left")
         tk.Label(ligne, text="Nos animaux", font=SOUS_TITRE, bg=VERT_PALE,
                  fg=NOIR).pack(side="left", padx=20)
         
@@ -118,6 +118,6 @@ class FenetreAnimaux(tk.Frame):
         pastille_sante(c, animal.sante).pack(pady=(2, 0))
 
        
-        photo.bind("<Button-1>", lambda e: self.app.ouvrir_fiche(animal))
-        nom.bind("<Button-1>", lambda e: self.app.ouvrir_fiche(animal))
+        photo.bind("<Button-1>", lambda e: self.app.afficher_fiche(animal))
+        nom.bind("<Button-1>", lambda e: self.app.afficher_fiche(animal))
         return c

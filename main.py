@@ -2,14 +2,16 @@
 
 
 import tkinter as tk
-from tkinter import messagebox
 
 from donnees import Zoo, NOM_DU_ZOO
 from style import BEIGE, configurer_ttk
 from fenetre_accueil import FenetreAccueil
 from fenetre_saisie import FenetreSaisie
 from fenetre_animaux import FenetreAnimaux
-from fenetre_admin import FenetreConnexion,fenetreAdmin
+from fenetre_fiche import FenetreFiche
+from fenetre_parrainage import FenetreParrainage
+from fenetre_don import FenetreDon
+from fenetre_admin import FenetreConnexion, FenetreAdmin
 
 
 class ApplicationZoo(tk.Tk):
@@ -43,25 +45,20 @@ class ApplicationZoo(tk.Tk):
     def afficher_animaux(self):
         self.changer_page(FenetreAnimaux)
 
+    def afficher_fiche(self, animal):
+        self.changer_page(FenetreFiche, animal)
+
+    def afficher_parrainage(self, animal):
+        self.changer_page(FenetreParrainage, animal)
+
+    def afficher_don(self):
+        self.changer_page(FenetreDon)
+
     def afficher_connexion(self):
         self.changer_page(FenetreConnexion)
-        
-    def afficher_admin(self):
-        self.changer_page(fenetreAdmin)
-        
 
-
-    def ouvrir_fiche(self, animal):
-        
-        messagebox.showinfo(
-            animal.nom,
-            f"{animal.nom} — {animal.espece}\n"
-            f"Classification : {animal.classification}\n"
-            f"Âge : {animal.age} an(s)   ·   Au zoo : {animal.nombre}\n"
-            f"État de santé : {animal.sante}\n\n"
-            f"{animal.description}\n\n"
-            "(La fiche complète et le parrainage arrivent bientôt.)",
-            parent=self)
+    def afficher_admin(self, utilisateur):
+        self.changer_page(FenetreAdmin, utilisateur)
 
 
 if __name__ == "__main__":

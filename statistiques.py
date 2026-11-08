@@ -1,7 +1,9 @@
 
 
 from donnees import (lire_csv, FICHIER_AGES, FICHIER_ORIGINE, FICHIER_SATISFACTION,
-                     FICHIER_VISITEURS, FICHIER_PARRAINAGES, TRANCHES_AGE, GENRES)
+                     FICHIER_VISITEURS, FICHIER_PARRAINAGES, TRANCHES_AGE, GENRES,
+                     ETATS_SANTE, nombre_de_mois)
+from style import COULEURS_SANTE
 
 VERTS = ["#3E6B48", "#5E8F5F", "#7FAE7F", "#A9CBA4", "#CFE2C6", "#E3D5B8"]
 
@@ -61,18 +63,6 @@ def graphe_pays(ax):
     return True
 
 
-def graphe_regions(ax):
-    lignes = [l for l in lire_csv(FICHIER_ORIGINE) if l["pays"] == "France"]
-    if not lignes:
-        return False
-    compteur = compter(lignes, "region")
-    regions = sorted(compteur, key=compteur.get)
-    ax.barh(regions, [compteur[r] for r in regions], color=VERTS[2])
-    ax.set_xlabel("Nombre de répondants")
-    habiller(ax, "Visiteurs français par région")
-    return True
-
-
 def graphe_satisfaction(ax):
     lignes = lire_csv(FICHIER_SATISFACTION)
     if not lignes:
@@ -115,27 +105,36 @@ def graphe_frequentation(ax):
     return True
 
 
-def graphe_parrainages(ax):
-    lignes = lire_csv(FICHIER_PARRAINAGES)
-    if not lignes:
-        return False
-    dons = {}
-    for l in lignes:
-        dons[l["animal"]] = dons.get(l["animal"], 0) + float(l["montant"])
-    animaux = sorted(dons, key=dons.get)[-12:]       
-    ax.barh(animaux, [dons[a] for a in animaux], color=VERTS[1])
-    ax.set_xlabel("Total des dons (€)")
-    habiller(ax, "Dons de parrainage par animal")
-    return True
-
-
-
 GRAPHIQUES = [
     ("Tranches d'âge", graphe_tranches_age),
     ("Genres", graphe_genres),
     ("Pays", graphe_pays),
-    ("Régions (France)", graphe_regions),
     ("Satisfaction", graphe_satisfaction),
     ("Fréquentation", graphe_frequentation),
-    ("Parrainages", graphe_parrainages),
 ]
+
+
+# --- Statistiques des animaux ---
+
+def graphe_sante(ax, animaux):
+    nombres = [sum(1 for a in animaux if a.sante == etat) for etat in ETATS_SANTE]
+    ax.barh(ETATS_SANTE, nombres, color=[COULEURS_SANTE[etat] for etat in ETATS_SANTE])
+    for i, n in enumerate(nombres):
+        ax.text(n + 0.3, i, f"{n}  ({100 * n / len(animaux):.0f} %)", va="center")
+    ax.invert_yaxis()
+    ax.set_xlabel("Nombre d'animaux")
+    ax.set_xlim(0, max(nombres) + 6)
+    habiller(ax, "État de santé des animaux")
+
+
+def classement_parrainages(animaux):
+    # liste de (nom, nombre de parrains, total versé), du plus parrainé au moins parrainé
+    lignes = lire_csv(FICHIER_PARRAINAGES)
+    resultat = []
+    for animal in animaux:
+        siens = [l for l in lignes if l["id_animal"] == str(animal.id)]
+        if siens:
+            total = sum(float(l["montant"]) * nombre_de_mois(l["date"]) for l in siens)
+            resultat.append((animal.nom, len(siens), total))
+    resultat.sort(key=lambda r: (r[1], r[2]), reverse=True)
+    return resultat

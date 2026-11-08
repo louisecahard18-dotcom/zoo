@@ -15,7 +15,8 @@ import sys
 from datetime import date, timedelta
 
 from donnees import (Zoo, enregistrer_avis, ajouter_ligne_csv, FICHIER_PARRAINAGES,
-                     COLONNES_PARRAINAGES, GENRES, TRANCHES_AGE, REGIONS)
+                     COLONNES_PARRAINAGES, FICHIER_DONS, COLONNES_DONS, MONTANT_PARRAINAGE,
+                     GENRES, TRANCHES_AGE)
 
 PRENOMS = ["camille", "lea", "hugo", "lucas", "chloe", "emma", "louis", "jade",
            "nathan", "ines", "paul", "manon", "theo", "sarah", "jules", "alice"]
@@ -38,18 +39,20 @@ def generer_avis(nombre):
         jours = [aujourdhui - timedelta(days=i) for i in range(60)]
         jour = random.choices(jours, weights=[3 if j.weekday() >= 5 else 1 for j in jours])[0]
         pays = random.choices(list(pays_poids), weights=list(pays_poids.values()))[0]
-        regions = REGIONS[pays]
         enregistrer_avis({
             "genre": random.choices(GENRES, weights=[48, 46, 2, 4])[0],
             "tranche_age": random.choices(TRANCHES_AGE, weights=[10, 8, 14, 32, 26, 10])[0],
             "pays": pays,
-            "region": random.choice(regions) if regions else "Non précisée",
             "nombre_visiteurs": random.choices(range(1, 7), weights=[10, 30, 15, 30, 10, 5])[0],
             "note_proprete": note_aleatoire(4.1),
             "note_infrastructures": note_aleatoire(3.6),
             "note_globale": note_aleatoire(4.0),
             "date_visite": jour.isoformat(),
         })
+
+
+def email_aleatoire():
+    return f"{random.choice(PRENOMS)}.{random.choice(NOMS)}@exemple.fr"
 
 
 def generer_parrainages(nombre):
@@ -59,15 +62,24 @@ def generer_parrainages(nombre):
              for a in zoo.animaux]
     for _ in range(nombre):
         animal = random.choices(zoo.animaux, weights=poids)[0]
-        email = f"{random.choice(PRENOMS)}.{random.choice(NOMS)}@exemple.fr"
-        jour = date.today() - timedelta(days=random.randint(0, 60))
+        debut = date.today() - timedelta(days=random.randint(0, 300))
         ajouter_ligne_csv(FICHIER_PARRAINAGES, COLONNES_PARRAINAGES, {
-            "date": jour.isoformat(), "id_animal": animal.id, "animal": animal.nom,
-            "montant": random.choice([10, 15, 20, 25, 30, 50, 75, 100]), "email": email})
+            "date": debut.isoformat(), "id_animal": animal.id, "animal": animal.nom,
+            "montant": MONTANT_PARRAINAGE, "email": email_aleatoire()})
+
+
+def generer_dons(nombre):
+    for _ in range(nombre):
+        jour = date.today() - timedelta(days=random.randint(0, 60))
+        ajouter_ligne_csv(FICHIER_DONS, COLONNES_DONS, {
+            "date": jour.isoformat(), "montant": random.choice([5, 10, 10, 20, 20, 30, 50, 100]),
+            "email": email_aleatoire()})
 
 
 if __name__ == "__main__":
     nb_avis = int(sys.argv[1]) if len(sys.argv) > 1 else 250
     generer_avis(nb_avis)
     generer_parrainages(nb_avis // 4)
-    print(f"{nb_avis} avis et {nb_avis // 4} parrainages fictifs ajoutés dans data/.")
+    generer_dons(nb_avis // 10)
+    print(f"{nb_avis} avis, {nb_avis // 4} parrainages et {nb_avis // 10} dons fictifs "
+          f"ajoutés dans data/.")

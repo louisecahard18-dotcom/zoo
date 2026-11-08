@@ -218,3 +218,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Projet zoo : mot de passe des mails et données personnelles des visiteurs
+config_mail.py
+data/mails_envoyes.txt
+data/parrainages.csv
+data/dons.csv
+data/gamme_age.csv
+data/origine.csv
+data/satisfaction.csv
+data/visiteurs_par_jour.csv

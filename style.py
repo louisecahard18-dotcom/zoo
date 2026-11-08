@@ -146,9 +146,8 @@ def dessiner_logo(canvas, x, y, r):
 _photos = {}
 
 
-def charger_photo(animal):
+def charger_photo(chemin):
     
-    chemin = animal.chemin_photo()
     if chemin not in _photos:
         try:
             _photos[chemin] = tk.PhotoImage(file=chemin) if os.path.exists(chemin) else None
@@ -157,11 +156,15 @@ def charger_photo(animal):
     return _photos[chemin]
 
 
-def vignette_animal(parent, animal, largeur=176, hauteur=124, fond=CREME):
-   
+def vignette_animal(parent, animal, grande=False, fond=CREME):
+    # petite photo pour la liste des animaux, grande photo pour la fiche
+    if grande:
+        largeur, hauteur, chemin = 380, 268, animal.chemin_grande_photo()
+    else:
+        largeur, hauteur, chemin = 176, 124, animal.chemin_photo()
     c = tk.Canvas(parent, width=largeur, height=hauteur, bg=fond,
                   highlightthickness=0, cursor="hand2")
-    photo = charger_photo(animal)
+    photo = charger_photo(chemin)
     if photo is not None:
         c.create_image(largeur // 2, hauteur // 2, image=photo)
     else:

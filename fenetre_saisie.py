@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date
 
-from donnees import GENRES, TRANCHES_AGE, PAYS, REGIONS, enregistrer_avis
+from donnees import GENRES, TRANCHES_AGE, PAYS, enregistrer_avis
 from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
                    SOUS_TITRE, TEXTE, GRAS, PETIT, POLICE,
                    Bouton, carte, champ_texte, NoteEtoiles)
@@ -31,7 +31,7 @@ class FenetreSaisie(tk.Frame):
         tk.Frame(entete, bg=VERT_CLAIR, height=8).pack(fill="x")
         tk.Label(entete, text="Votre avis nous intéresse", font=SOUS_TITRE,
                  bg=VERT_PALE, fg=NOIR).pack(pady=(12, 0))
-        tk.Label(entete, text="Les cquestion marqués * sont obligatoires.",
+        tk.Label(entete, text="Les questions marquées * sont obligatoires.",
                  font=TEXTE, bg=VERT_PALE, fg=NOIR).pack(pady=(2, 12))
 
         corps = tk.Frame(self, bg=BEIGE)
@@ -47,17 +47,14 @@ class FenetreSaisie(tk.Frame):
         self.genre = ttk.Combobox(gauche, values=GENRES, state="readonly", width=24)
         self.age = ttk.Combobox(gauche, values=TRANCHES_AGE, state="readonly", width=24)
         self.pays = ttk.Combobox(gauche, values=PAYS, state="readonly", width=24)
-        self.region = ttk.Combobox(gauche, width=24)
         self.nb_visiteurs = ttk.Spinbox(gauche, from_=1, to=50, width=6, font=TEXTE)
         self.nb_visiteurs.set(1)
 
-        self.pays.bind("<<ComboboxSelected>>", self.maj_regions)
         self.pays.set("France")
-        self.maj_regions()
 
         lignes = [("Nom *", self.nom), ("Prénom *", self.prenom),
                   ("Genre *", self.genre), ("Tranche d'âge *", self.age),
-                  ("Pays *", self.pays), ("Région", self.region),
+                  ("Pays *", self.pays),
                   ("Nombre de personnes\ndans le groupe *", self.nb_visiteurs)]
         for i, (texte, widget) in enumerate(lignes, start=1):
             self.ligne(gauche, i, texte, widget)
@@ -114,14 +111,6 @@ class FenetreSaisie(tk.Frame):
                  anchor="w").grid(row=rang, column=0, sticky="w", pady=7, padx=(0, 16))
         widget.grid(row=rang, column=1, sticky="w", pady=7)
 
-    def maj_regions(self, event=None):
-
-        regions = REGIONS.get(self.pays.get(), [])
-        self.region.config(values=regions)
-        self.region.set("")
-       
-        self.region.config(state="readonly" if regions else "normal")
-
     def lire_date(self):
    
         try:
@@ -155,7 +144,7 @@ class FenetreSaisie(tk.Frame):
         if d is None:
             erreurs.append("La date de la visite n'existe pas.")
         elif d > date.today():
-            erreurs.append("La date de la visite est incorect.")
+            erreurs.append("La date de la visite est incorrecte.")
 
         for nom_note, note in [("propreté", self.note_proprete),
                                ("infrastructures", self.note_infra),
@@ -171,7 +160,6 @@ class FenetreSaisie(tk.Frame):
             "genre": self.genre.get(),
             "tranche_age": self.age.get(),
             "pays": self.pays.get(),
-            "region": self.region.get().strip() or "Non précisée",
             "nombre_visiteurs": int(nb),
             "note_proprete": self.note_proprete.note,
             "note_infrastructures": self.note_infra.note,

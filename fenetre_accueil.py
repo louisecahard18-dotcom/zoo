@@ -42,14 +42,16 @@ class FenetreAccueil(tk.Frame):
         tk.Label(centre, text="Merci de votre visite !", font=SOUS_TITRE,
                  bg=CREME, fg=NOIR).pack()
         tk.Label(centre, font=TEXTE, bg=CREME, fg=NOIR, justify="center",
-                 text="Nous vous donnons l'occasion de donner votre avis sur le zoo\n"
-                      "et de parrainer l'un de nos animaux.").pack(pady=(8, 22))
+                 text="Nous vous donnons l'occasion de donner votre avis sur le zoo,\n"
+                      "de parrainer l'un de nos animaux ou de faire un don.").pack(pady=(8, 22))
 
         boutons = tk.Frame(centre, bg=CREME)
         boutons.pack()
         Bouton(boutons, " Donner mon avis", app.afficher_saisie,
                police=(POLICE, 14, "bold")).pack(side="left", padx=10)
         Bouton(boutons, "Voir les animaux", app.afficher_animaux,
+               police=(POLICE, 14, "bold")).pack(side="left", padx=10)
+        Bouton(boutons, "Faire un don", app.afficher_don,
                police=(POLICE, 14, "bold")).pack(side="left", padx=10)
 
        

@@ -2,6 +2,7 @@
 
 import csv
 import os
+from datetime import date
 
 
 
@@ -15,23 +16,27 @@ FICHIER_ORIGINE = os.path.join(DOSSIER_DATA, "origine.csv")
 FICHIER_SATISFACTION = os.path.join(DOSSIER_DATA, "satisfaction.csv")
 FICHIER_VISITEURS = os.path.join(DOSSIER_DATA, "visiteurs_par_jour.csv")
 FICHIER_PARRAINAGES = os.path.join(DOSSIER_DATA, "parrainages.csv")
+FICHIER_DONS = os.path.join(DOSSIER_DATA, "dons.csv")
 FICHIER_MAILS = os.path.join(DOSSIER_DATA, "mails_envoyes.txt")
+FICHIER_CREDITS = os.path.join(DOSSIER_IMAGES, "credits.csv")
 
 
 COLONNES_ANIMAUX = ["id", "nom", "espece", "nom_scientifique", "classification",
                     "age", "nombre", "sante", "regime", "origine", "poids",
                     "statut_uicn", "description", "wikipedia"]
 COLONNES_AGES = ["id_visite", "date_visite", "genre", "tranche_age"]
-COLONNES_ORIGINE = ["id_visite", "date_visite", "pays", "region"]
+COLONNES_ORIGINE = ["id_visite", "date_visite", "pays"]
 COLONNES_SATISFACTION = ["id_visite", "date_visite", "note_proprete",
                          "note_infrastructures", "note_globale"]
 COLONNES_VISITEURS = ["id_visite", "date_visite", "nombre_visiteurs"]
 COLONNES_PARRAINAGES = ["date", "id_animal", "animal", "montant", "email"]
+COLONNES_DONS = ["date", "montant", "email"]
 
 SEPARATEUR = ";"
 
 
 NOM_DU_ZOO = "Zoo de la Canopée"
+MONTANT_PARRAINAGE = 5          # euros par mois
 
 CLASSIFICATIONS = ["Mammifère", "Oiseau", "Reptile", "Amphibien", "Poisson"]
 
@@ -44,19 +49,8 @@ TRANCHES_AGE = ["Moins de 12 ans", "12-17 ans", "18-25 ans", "26-40 ans",
                 "41-60 ans", "Plus de 60 ans"]
 
 
-REGIONS = {
-    "France": ["Auvergne-Rhône-Alpes", "Bourgogne-Franche-Comté", "Bretagne",
-               "Centre-Val de Loire", "Corse", "Grand Est", "Hauts-de-France",
-               "Île-de-France", "Normandie", "Nouvelle-Aquitaine", "Occitanie",
-               "Pays de la Loire", "Provence-Alpes-Côte d'Azur", "Outre-mer"],
-    "Belgique": ["Bruxelles-Capitale", "Flandre", "Wallonie"],
-    "Suisse": ["Suisse romande", "Suisse alémanique", "Suisse italienne"],
-    "Luxembourg": ["Luxembourg"],
-    "Allemagne": [], "Espagne": [], "Italie": [], "Royaume-Uni": [],
-    "Pays-Bas": [], "Portugal": [], "États-Unis": [], "Canada": [],
-    "Autre": [],
-}
-PAYS = list(REGIONS.keys())
+PAYS = ["France", "Belgique", "Suisse", "Luxembourg", "Allemagne", "Espagne", "Italie",
+        "Royaume-Uni", "Pays-Bas", "Portugal", "États-Unis", "Canada", "Autre"]
 
 
 COMPTES_ADMIN = {
@@ -116,8 +110,7 @@ def enregistrer_avis(avis):
         "id_visite": id_visite, "date_visite": date,
         "genre": avis["genre"], "tranche_age": avis["tranche_age"]})
     ajouter_ligne_csv(FICHIER_ORIGINE, COLONNES_ORIGINE, {
-        "id_visite": id_visite, "date_visite": date,
-        "pays": avis["pays"], "region": avis["region"]})
+        "id_visite": id_visite, "date_visite": date, "pays": avis["pays"]})
     ajouter_ligne_csv(FICHIER_SATISFACTION, COLONNES_SATISFACTION, {
         "id_visite": id_visite, "date_visite": date,
         "note_proprete": avis["note_proprete"],
@@ -161,6 +154,13 @@ class Animal:
         
         return os.path.join(DOSSIER_IMAGES, f"{self.id}.png")
 
+    def chemin_grande_photo(self):
+        return os.path.join(DOSSIER_IMAGES, "grandes", f"{self.id}.png")
+
+    def photos_exclusives(self):
+        return [os.path.join(DOSSIER_IMAGES, "exclusives", f"{self.id}_{k}.jpg")
+                for k in (1, 2, 3)]
+
     def __repr__(self):
         return f"Animal({self.nom}, {self.espece})"
 
@@ -199,8 +199,40 @@ class Zoo:
             resultat.append(a)
         return resultat
 
-   
- 
 
-   
-    
+def email_valide(email):
+    return " " not in email and "@" in email and "." in email.split("@")[-1]
+
+
+def parrains(animal):
+    return [l["email"] for l in lire_csv(FICHIER_PARRAINAGES) if l["id_animal"] == str(animal.id)]
+
+
+def enregistrer_parrainage(animal, email):
+    ajouter_ligne_csv(FICHIER_PARRAINAGES, COLONNES_PARRAINAGES, {
+        "date": date.today().isoformat(), "id_animal": animal.id, "animal": animal.nom,
+        "montant": MONTANT_PARRAINAGE, "email": email})
+
+
+def nombre_de_mois(date_debut):
+    # nombre de mensualités déjà payées depuis le début du parrainage (renouvelé chaque mois)
+    debut = date.fromisoformat(date_debut)
+    aujourdhui = date.today()
+    mois = (aujourdhui.year - debut.year) * 12 + aujourdhui.month - debut.month
+    if aujourdhui.day >= debut.day:
+        mois = mois + 1
+    return mois
+
+
+def enregistrer_don(montant, email):
+    ajouter_ligne_csv(FICHIER_DONS, COLONNES_DONS, {
+        "date": date.today().isoformat(), "montant": montant, "email": email})
+
+
+def credit_photo(chemin):
+    # "Photo : auteur (licence)" pour respecter la licence des photos de Wikimedia
+    nom = os.path.basename(chemin)
+    for l in lire_csv(FICHIER_CREDITS):
+        if l["fichier"] == nom:
+            return f"Photo : {l['auteur']} ({l['licence']})"
+    return ""
