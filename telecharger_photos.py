@@ -49,7 +49,6 @@ FICHIERS_EXCLUS = ["File:Funchal_(Madeira,_Portugal),_Rua_de_Santa_Maria_58_--_2
                    "File:Arctic_ocean_drift_ice,_the_realm_of_the_polar_bear.jpg",
                    "File:654_Rives_Laïta_Guidel.jpg",
                    "File:653_Rives_Laïta_Guidel.jpg",
-                   "File:Ball_python_lucy.JPG",
                    "File:020240211_Python_regius.jpg"]
 
 
@@ -215,7 +214,8 @@ def traiter(animal):
     if len(candidats) < 4:
         noms_vus = {i["nom"] for i in candidats}
         en_plus = [n for n in fichiers_commons(animal.nom_scientifique) if n not in noms_vus]
-        candidats += [i for i in infos_images(en_plus) if image_acceptable(i)]
+        candidats = sans_doublons(candidats + [i for i in infos_images(en_plus)
+                                               if image_acceptable(i)])
     if len(candidats) < 4:
         print(f"[pas assez de photos] {animal.nom} : {len(candidats)}")
         return
@@ -230,7 +230,9 @@ def traiter(animal):
         # pas assez de photos dans l'article : on en cherche d'autres sur Commons
         noms_vus = {i["nom"] for i in candidats}
         en_plus = [n for n in fichiers_commons(animal.nom_scientifique) if n not in noms_vus]
-        choisies += choisir([i for i in infos_images(en_plus) if image_acceptable(i)],
+        deja = {(i["largeur"], i["hauteur"], i["auteur"]) for i in candidats}
+        choisies += choisir([i for i in infos_images(en_plus) if image_acceptable(i)
+                             and (i["largeur"], i["hauteur"], i["auteur"]) not in deja],
                             4 - len(choisies))
     if len(choisies) < 4:
         print(f"[pas assez de photos en couleur] {animal.nom}")
