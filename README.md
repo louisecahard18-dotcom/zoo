@@ -16,7 +16,7 @@ Il faut Tkinter et `matplotlib` (déjà installés avec Anaconda / Spyder).
 
 1. **Page de garde** : « Donner mon avis », « Voir les animaux », « Faire un don », accès administrateur.
 2. **Saisie** : nom, prénom, genre, tranche d'âge, pays, nombre de personnes, date, 3 notes (étoiles de 1 à 5).
-3. **Liste des animaux** : 40 animaux avec leur photo, filtres par classification et par état de santé.
+3. **Liste des animaux** : 39 animaux avec leur photo, filtres par classification et par état de santé.
 4. **Fiche animal** : grande photo, informations, description, bouton « Parrainer cet animal ».
 5. **Parrainage** : 5 € par mois renouvelés automatiquement ; la personne donne son e-mail et reçoit
    un mail de remerciement avec 3 photos exclusives, puis un mail si l'état de santé de l'animal change

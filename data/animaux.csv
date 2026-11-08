@@ -16,7 +16,6 @@ id;nom;espece;nom_scientifique;classification;age;nombre;sante;regime;origine;po
 15;Kifaru;Rhinocéros blanc;Ceratotherium simum;Mammifère;19;3;Bonne santé;Herbivore;Afrique australe;2 300 kg;Quasi menacé;Sa corne est faite de kératine, comme nos ongles.;Rhinocéros blanc
 16;Skippy;Kangourou roux;Osphranter rufus;Mammifère;5;7;Bonne santé;Herbivore;Australie;85 kg;Préoccupation mineure;Il peut faire des bonds de 8 mètres de long.;Kangourou roux
 17;Julien;Lémur catta;Lemur catta;Mammifère;8;9;Bonne santé;Omnivore;Madagascar;2,5 kg;En danger;Il prend des bains de soleil, bras écartés, chaque matin.;Maki catta
-18;Plume;Loutre d'Europe;Lutra lutra;Mammifère;3;4;Blessé;Piscivore;Europe et Asie;8 kg;Quasi menacé;Sa fourrure très dense compte 50 000 poils par cm².;Loutre d'Europe
 19;Mbali;Okapi;Okapia johnstoni;Mammifère;10;2;Bonne santé;Herbivore;République démocratique du Congo;250 kg;En danger;Cousin de la girafe malgré ses rayures de zèbre sur les pattes.;Okapi
 20;Tatanka;Bison d'Europe;Bison bonasus;Mammifère;12;6;Bonne santé;Herbivore;Forêts d'Europe;700 kg;Quasi menacé;Le plus lourd mammifère terrestre d'Europe, sauvé de l'extinction.;Bison d'Europe
 21;Flash;Paresseux à deux doigts;Choloepus didactylus;Mammifère;13;2;Bonne santé;Herbivore;Amérique du Sud;6 kg;Préoccupation mineure;Il ne descend de son arbre qu'une fois par semaine environ.;Unau
