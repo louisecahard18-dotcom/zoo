@@ -162,6 +162,21 @@ def noter_credit(fichier, info):
         "source": info["source"]})
 
 
+def choisir(candidats, combien):
+    """Télécharge les candidats dans l'ordre et garde les premières images en couleur."""
+    choisies = []
+    for info in candidats:
+        if len(choisies) == combien:
+            break
+        try:
+            image = lire_image(info["url"])
+        except OSError:             # image trop lente à venir : on passe à la suivante
+            continue
+        if est_en_couleur(image):
+            choisies.append((info, image))
+    return choisies
+
+
 def complet(animal):
     chemins = [animal.chemin_photo(), animal.chemin_grande_photo()] + animal.photos_exclusives()
     return all(os.path.exists(c) for c in chemins)
@@ -188,16 +203,13 @@ def traiter(animal):
 
     # on télécharge les images une par une jusqu'à en avoir 4 en couleur,
     # et on n'enregistre rien avant, pour ne jamais garder un animal à moitié fait
-    choisies = []
-    for info in candidats:
-        try:
-            image = lire_image(info["url"])
-        except OSError:             # image trop lente à venir : on passe à la suivante
-            continue
-        if est_en_couleur(image):
-            choisies.append((info, image))
-        if len(choisies) == 4:
-            break
+    choisies = choisir(candidats, 4)
+    if len(choisies) < 4:
+        # pas assez de photos dans l'article : on en cherche d'autres sur Commons
+        noms_vus = {i["nom"] for i in candidats}
+        en_plus = [n for n in fichiers_commons(animal.nom_scientifique) if n not in noms_vus]
+        choisies += choisir([i for i in infos_images(en_plus) if image_acceptable(i)],
+                            4 - len(choisies))
     if len(choisies) < 4:
         print(f"[pas assez de photos en couleur] {animal.nom}")
         return
