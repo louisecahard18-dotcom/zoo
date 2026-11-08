@@ -44,6 +44,11 @@ MOTS_INTERDITS = ["map", "carte", "range", "distribution", "repartition", "statu
                   "fur", "fourrure", "claw", "griffe", "pattern", "texture"]
 
 
+# Photos vérifiées à la main qui ne montrent pas l'animal
+FICHIERS_EXCLUS = ["File:Funchal_(Madeira,_Portugal),_Rua_de_Santa_Maria_58_--_2025_--_0838.jpg",
+                   "File:Arctic_ocean_drift_ice,_the_realm_of_the_polar_bear.jpg"]
+
+
 def telecharger(url):
     # Si le serveur répond « trop de requêtes » (erreur 429), on attend puis on réessaie
     for essai in range(6):
@@ -131,6 +136,7 @@ def image_acceptable(info):
         nom = nom.replace(a, b)
     proportions = info["largeur"] / info["hauteur"]
     return (info["mime"] == "image/jpeg" and info["largeur"] >= 600
+            and info["nom"].replace(" ", "_") not in FICHIERS_EXCLUS
             and 0.5 <= proportions <= 2.2                   # pas de montage très étiré
             and re.search(r"1[78]\d\d", nom) is None       # pas d'œuvre des années 1700-1800
             and not any(mot in nom for mot in MOTS_INTERDITS))
