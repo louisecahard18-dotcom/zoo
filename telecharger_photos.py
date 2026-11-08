@@ -54,7 +54,7 @@ def telecharger(url):
             if erreur.code != 429 or essai == 5:
                 raise
         except (TimeoutError, urllib.error.URLError):     # serveur trop lent : on réessaie
-            if essai == 5:
+            if essai >= 2:
                 raise
         time.sleep(5 * (essai + 1))
 
@@ -190,7 +190,10 @@ def traiter(animal):
     # et on n'enregistre rien avant, pour ne jamais garder un animal à moitié fait
     choisies = []
     for info in candidats:
-        image = lire_image(info["url"])
+        try:
+            image = lire_image(info["url"])
+        except OSError:             # image trop lente à venir : on passe à la suivante
+            continue
         if est_en_couleur(image):
             choisies.append((info, image))
         if len(choisies) == 4:
