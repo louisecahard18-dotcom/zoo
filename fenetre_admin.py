@@ -1,31 +1,21 @@
-"""Fenêtres 6 et 7 : connexion administrateur et interface d'administration."""
+
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
+from donnees import (verifier_identifiants)
 
-from donnees import (CLASSIFICATIONS, ETATS_SANTE, FICHIER_VISITEURS, FICHIER_SATISFACTION,
-                     FICHIER_PARRAINAGES, lire_csv, lire_journal_mails,
-                     verifier_identifiants)
-from statistiques import GRAPHIQUES
+
 from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
                    SOUS_TITRE, TEXTE, GRAS, PETIT, PETIT_GRAS, POLICE,
-                   Bouton, carte, champ_texte, vignette_animal)
-
-# matplotlib sert à tracer les graphiques. S'il n'est pas installé,
-# le reste de l'interface fonctionne quand même.
-try:
-    from matplotlib.figure import Figure
-    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-    MATPLOTLIB = True
-except ImportError:
-    MATPLOTLIB = False
+                   Bouton, carte, champ_texte)
 
 
-# ============================================================================
-# Fenêtre 6 : connexion
-# ============================================================================
+
+
+
+
 class FenetreConnexion(tk.Frame):
-    """Demande l'identifiant et le mot de passe."""
+    
 
     def __init__(self, app):
         super().__init__(app, bg=BEIGE)
@@ -63,7 +53,7 @@ class FenetreConnexion(tk.Frame):
         self.message = tk.Label(boite, text="", font=PETIT_GRAS, bg=CREME, fg=NOIR)
         self.message.grid(row=7, column=0, columnspan=2, pady=(12, 0))
 
-        # La touche Entrée valide le formulaire
+     
         for champ in (self.utilisateur, self.mot_de_passe):
             champ.bind("<Return>", lambda e: self.connexion())
         self.utilisateur.focus_set()
@@ -78,24 +68,18 @@ class FenetreConnexion(tk.Frame):
         else:
             self.mot_de_passe.delete(0, "end")
             self.message.config(text="Identifiant ou mot de passe incorrect.")
-
-
-# ============================================================================
-# Fenêtre 7 : interface d'administration
-# ============================================================================
-class FenetreAdmin(tk.Frame):
-    """Modification des fiches animaux, statistiques et mails."""
-
-    def __init__(self, app, utilisateur):
-        super().__init__(app, bg=BEIGE)
-        self.app = app
-        self.zoo = app.zoo
-        self.animal = None                 # animal actuellement sélectionné
-        self.animaux_affiches = []         # animaux visibles dans la liste (même ordre)
-
-        # --- En-tête ---------------------------------------------------------
-        entete = tk.Frame(self, bg=VERT_PALE)
-        entete.pack(fill="x")
+            
+class fenetreAdmin(tk.Frame):
+    
+    def __init__(self,app,utilisateur):
+        super().__init__(app,bg=BEIGE)
+        self.app=app
+        self.zoo=app.zoo
+        self.animal=None
+        self.animaux_affiche=[]
+        
+        entete = tk.Frame(self,bg=VERT_PALE)
+        entete.pack(fill='x')
         tk.Frame(entete, bg=VERT_CLAIR, height=8).pack(fill="x")
         ligne = tk.Frame(entete, bg=VERT_PALE)
         ligne.pack(fill="x", padx=20, pady=10)
@@ -104,306 +88,49 @@ class FenetreAdmin(tk.Frame):
         Bouton(ligne, "Déconnexion", self.deconnexion, couleur=BEIGE_FONCE).pack(side="right")
         tk.Label(ligne, text=f"Connecté : {utilisateur}", font=TEXTE, bg=VERT_PALE,
                  fg=NOIR).pack(side="right", padx=16)
-
-        # --- Barre d'état (en bas) -------------------------------------------
-        self.etat = tk.Label(self, text="Prêt.", font=PETIT, bg=BEIGE_FONCE, fg=NOIR,
-                             anchor="w", padx=10)
-        self.etat.pack(side="bottom", fill="x")
-
-        # --- Onglets ---------------------------------------------------------
-        self.onglets = ttk.Notebook(self)
-        self.onglets.pack(fill="both", expand=True, padx=14, pady=10)
-        self.onglet_fiches = tk.Frame(self.onglets, bg=BEIGE)
-        self.onglet_stats = tk.Frame(self.onglets, bg=BEIGE)
-        self.onglet_mails = tk.Frame(self.onglets, bg=BEIGE)
-        self.onglets.add(self.onglet_fiches, text="Fiches animaux")
-        self.onglets.add(self.onglet_stats, text="Statistiques")
-        self.onglets.add(self.onglet_mails, text="Mails envoyés")
+        
+        self.onglets=ttk.Notebook(self)
+        self.onglet.pack(fill="both",expand=True, pdx=14, pdy=10)
+        self.onglet_fiche=tk.Frame(self.onglet(),bg=BEIGE)
+        self.onglet_statanimaux=tk.Frame(self.onglet(),bg=BEIGE)
+        self.onglet_statvisiteur=tk.Frame(self.onglet(),bg=BEIGE)
+        self.onglet_mails=tk.Frame(self.onglet(),bg=BEIGE)
+        self.onglet.add(self.onglet_fiche, text="Fiche des animaux")
+        self.onglet.add(self.onglet_statanimaux, text="Statistique des animaux")
+        self.onglet.add(self.onglet_statvisiteur, text="Statstique sur les visiteurs")
+        self.onglet.add(self.onglet_mails, text="Historique des mails envoyès aux parains")
         self.onglets.bind("<<NotebookTabChanged>>", self.changement_onglet)
-
+        
         self.construire_fiches()
         self.construire_stats()
-        self.construire_mails()
+ 
 
         self.rafraichir_liste()
         if self.animaux_affiches:
             self.selectionner(self.animaux_affiches[0])
+            
+def construire_fiches(self):
+     
+     gauche = carte(self.onglet_fiches, padx=10, pady=10)
+     gauche.pack(side="left", fill="y", padx=(10, 6), pady=10)
+     tk.Label(gauche, text="Choix de l'animal", font=GRAS, bg=CREME,
+              fg=NOIR).pack(anchor="w")
 
-    # ========================================================================
-    # Onglet 1 : fiches animaux
-    # ========================================================================
-    def construire_fiches(self):
-        # --- Liste des animaux (à gauche) ------------------------------------
-        gauche = carte(self.onglet_fiches, padx=10, pady=10)
-        gauche.pack(side="left", fill="y", padx=(10, 6), pady=10)
-        tk.Label(gauche, text="Choix de l'animal", font=GRAS, bg=CREME,
-                 fg=NOIR).pack(anchor="w")
+     cadre_liste = tk.Frame(gauche, bg=CREME)
+     cadre_liste.pack(fill="both", expand=True)
+     barre = ttk.Scrollbar(cadre_liste, orient="vertical")
+     self.liste = tk.Listbox(cadre_liste, width=34, font=TEXTE, bg=CREME, fg=NOIR,
+                             selectbackground=VERT_CLAIR, selectforeground=NOIR,
+                             activestyle="none", relief="flat", highlightthickness=0,
+                             exportselection=False, yscrollcommand=barre.set)
+     barre.config(command=self.liste.yview)
+     barre.pack(side="right", fill="y")
+     self.liste.pack(side="left", fill="both", expand=True)
+     self.liste.bind("<<ListboxSelect>>", self.clic_liste)
+     tk.Label(gauche, text="Fond orangé : animal qui n'est pas en bonne santé",
+              font=PETIT, bg=CREME, fg=NOIR).pack(anchor="w", pady=(6, 0))
+        
 
-        cadre_liste = tk.Frame(gauche, bg=CREME)
-        cadre_liste.pack(fill="both", expand=True)
-        barre = ttk.Scrollbar(cadre_liste, orient="vertical")
-        self.liste = tk.Listbox(cadre_liste, width=34, font=TEXTE, bg=CREME, fg=NOIR,
-                                selectbackground=VERT_CLAIR, selectforeground=NOIR,
-                                activestyle="none", relief="flat", highlightthickness=0,
-                                exportselection=False, yscrollcommand=barre.set)
-        barre.config(command=self.liste.yview)
-        barre.pack(side="right", fill="y")
-        self.liste.pack(side="left", fill="both", expand=True)
-        self.liste.bind("<<ListboxSelect>>", self.clic_liste)
-        tk.Label(gauche, text="Fond orangé : animal qui n'est pas en bonne santé",
-                 font=PETIT, bg=CREME, fg=NOIR).pack(anchor="w", pady=(6, 0))
 
-        # --- Formulaire (à droite) -------------------------------------------
-        self.droite = carte(self.onglet_fiches, padx=20, pady=14)
-        self.droite.pack(side="left", fill="both", expand=True, padx=(6, 10), pady=10)
 
-        haut = tk.Frame(self.droite, bg=CREME)
-        haut.pack(fill="x")
-        self.cadre_vignette = tk.Frame(haut, bg=CREME)
-        self.cadre_vignette.pack(side="left")
-        infos = tk.Frame(haut, bg=CREME)
-        infos.pack(side="left", fill="both", expand=True, padx=18)
-        self.titre_fiche = tk.Label(infos, font=SOUS_TITRE, bg=CREME, fg=NOIR, anchor="w")
-        self.titre_fiche.pack(fill="x")
-        self.infos_fiche = tk.Label(infos, font=PETIT, bg=CREME, fg=NOIR, anchor="w",
-                                    justify="left", wraplength=420)
-        self.infos_fiche.pack(fill="x", pady=(4, 0))
 
-        tk.Frame(self.droite, bg=VERT_CLAIR, height=2).pack(fill="x", pady=12)
-
-        form = tk.Frame(self.droite, bg=CREME)
-        form.pack(fill="x")
-        self.champ_nom = champ_texte(form, largeur=22)
-        self.champ_espece = champ_texte(form, largeur=22)
-        self.champ_age = ttk.Spinbox(form, from_=0, to=200, width=6, font=TEXTE)
-        self.champ_classe = ttk.Combobox(form, values=CLASSIFICATIONS, state="readonly",
-                                         width=14)
-        self.champ_nombre = ttk.Spinbox(form, from_=0, to=999, width=6, font=TEXTE)
-        self.champ_sante = ttk.Combobox(form, values=ETATS_SANTE, state="readonly", width=18)
-
-        champs = [("Nom", self.champ_nom, 0, 0), ("Espèce", self.champ_espece, 0, 2),
-                  ("Âge (ans)", self.champ_age, 1, 0),
-                  ("Classification", self.champ_classe, 1, 2),
-                  ("Nombre de bêtes", self.champ_nombre, 2, 0),
-                  ("État de santé", self.champ_sante, 2, 2)]
-        for texte, widget, rang, col in champs:
-            tk.Label(form, text=texte, font=TEXTE, bg=CREME, fg=NOIR).grid(
-                row=rang, column=col, sticky="w", pady=7, padx=(0 if col == 0 else 30, 10))
-            widget.grid(row=rang, column=col + 1, sticky="w", pady=7)
-
-        # Naissance d'un bébé
-        cadre_naissance = tk.Frame(self.droite, bg=VERT_PALE, padx=12, pady=8)
-        cadre_naissance.pack(fill="x", pady=(14, 0))
-        self.naissance = tk.BooleanVar()
-        tk.Checkbutton(cadre_naissance, text="Signaler une naissance", variable=self.naissance,
-                       font=GRAS, bg=VERT_PALE, fg=NOIR, activebackground=VERT_PALE,
-                       selectcolor=CREME).pack(side="left")
-        tk.Label(cadre_naissance, text="Nombre de bébés :", font=TEXTE, bg=VERT_PALE,
-                 fg=NOIR).pack(side="left", padx=(20, 6))
-        self.nb_bebes = ttk.Spinbox(cadre_naissance, from_=1, to=30, width=4, font=TEXTE)
-        self.nb_bebes.set(1)
-        self.nb_bebes.pack(side="left")
-
-        self.info_parrains = tk.Label(self.droite, font=PETIT, bg=CREME, fg=NOIR,
-                                      anchor="w", justify="left", wraplength=620)
-        self.info_parrains.pack(fill="x", pady=(10, 0))
-
-        boutons = tk.Frame(self.droite, bg=CREME)
-        boutons.pack(side="bottom", fill="x", pady=(10, 0))
-        Bouton(boutons, "Enregistrer", self.enregistrer).pack(side="right")
-        Bouton(boutons, "Annuler les changements", lambda: self.selectionner(self.animal),
-               couleur=BEIGE_FONCE).pack(side="right", padx=10)
-
-    def rafraichir_liste(self):
-        """Remplit la liste de gauche (en gardant l'animal sélectionné)."""
-        self.animaux_affiches = list(self.zoo.animaux)
-        self.liste.delete(0, "end")
-        for i, a in enumerate(self.animaux_affiches):
-            self.liste.insert("end", f" {a.nom}  —  {a.espece}")
-            if a.sante != "Bonne santé":
-                self.liste.itemconfig(i, bg="#F4DDBF")
-        if self.animal in self.animaux_affiches:
-            i = self.animaux_affiches.index(self.animal)
-            self.liste.selection_set(i)
-            self.liste.see(i)
-
-    def clic_liste(self, event=None):
-        selection = self.liste.curselection()
-        if selection:
-            self.selectionner(self.animaux_affiches[selection[0]])
-
-    def selectionner(self, animal):
-        """Affiche la fiche d'un animal dans le formulaire."""
-        if animal not in self.zoo.animaux:
-            animal = self.zoo.animaux[0] if self.zoo.animaux else None
-        self.animal = animal
-        if animal is None:
-            return
-
-        for w in self.cadre_vignette.winfo_children():
-            w.destroy()
-        vignette_animal(self.cadre_vignette, animal).pack()
-
-        self.titre_fiche.config(text=f"{animal.nom}  (fiche n°{animal.id})")
-        self.infos_fiche.config(
-            text=f"{animal.nom_scientifique} · {animal.regime} · {animal.origine}\n"
-                 f"Poids moyen : {animal.poids} · Statut UICN : {animal.statut_uicn}\n"
-                 f"{animal.description}")
-
-        self.champ_nom.delete(0, "end")
-        self.champ_nom.insert(0, animal.nom)
-        self.champ_espece.delete(0, "end")
-        self.champ_espece.insert(0, animal.espece)
-        self.champ_age.set(animal.age)
-        self.champ_classe.set(animal.classification)
-        self.champ_nombre.set(animal.nombre)
-        self.champ_sante.set(animal.sante)
-        self.naissance.set(False)
-        self.nb_bebes.set(1)
-
-        nb = len(self.zoo.parrains(animal))
-        self.info_parrains.config(
-            text=f"{animal.nom} a {nb} parrain(s). Un mail leur est envoyé automatiquement "
-                 f"si l'état de santé change ou en cas de naissance.")
-        self.rafraichir_liste()
-
-    def enregistrer(self):
-        """Enregistre le formulaire et prévient les parrains si nécessaire."""
-        animal = self.animal
-        if animal is None:
-            return
-        valeurs = {"nom": self.champ_nom.get(), "espece": self.champ_espece.get(),
-                   "age": self.champ_age.get(), "classification": self.champ_classe.get(),
-                   "nombre": self.champ_nombre.get(), "sante": self.champ_sante.get()}
-
-        nb_parrains = len(self.zoo.parrains(animal))
-        if (valeurs["sante"] != animal.sante or self.naissance.get()) and nb_parrains > 0:
-            if not messagebox.askyesno("Confirmation", f"Un mail va être envoyé aux "
-                                       f"{nb_parrains} parrain(s) de {animal.nom}.\n"
-                                       "Continuer ?", parent=self):
-                return
-        try:
-            messages = self.zoo.modifier(animal, valeurs)
-            if self.naissance.get():
-                nb = self.nb_bebes.get()
-                if not nb.isdigit():
-                    raise ValueError("Le nombre de bébés doit être un entier.")
-                messages += self.zoo.naissance(animal, int(nb))
-        except ValueError as erreur:
-            messagebox.showerror("Valeur incorrecte", str(erreur), parent=self)
-            return
-
-        self.etat.config(text=" | ".join(messages))
-        messagebox.showinfo("Fiche enregistrée", "\n".join(messages), parent=self)
-        self.selectionner(animal)
-
-    # ========================================================================
-    # Onglet 2 : statistiques (lecture des CSV)
-    # ========================================================================
-    def construire_stats(self):
-        self.indicateurs = tk.Frame(self.onglet_stats, bg=BEIGE)
-        self.indicateurs.pack(fill="x", padx=10, pady=(10, 0))
-
-        corps = tk.Frame(self.onglet_stats, bg=BEIGE)
-        corps.pack(fill="both", expand=True, padx=10, pady=10)
-        menu = carte(corps, padx=10, pady=10)
-        menu.pack(side="left", fill="y")
-        tk.Label(menu, text="Graphiques", font=GRAS, bg=CREME, fg=NOIR).pack(anchor="w",
-                                                                             pady=(0, 8))
-        self.zone_graphe = carte(corps)
-        self.zone_graphe.pack(side="left", fill="both", expand=True, padx=(10, 0))
-
-        if not MATPLOTLIB:
-            tk.Label(self.zone_graphe, font=TEXTE, bg=CREME, fg=NOIR, justify="center",
-                     text="Le module matplotlib n'est pas installé.\n\n"
-                          "Installez-le avec :  pip install matplotlib\n"
-                          "puis relancez l'application.").pack(expand=True)
-            return
-
-        for titre, fonction in GRAPHIQUES:
-            b = Bouton(menu, titre, lambda f=fonction: self.tracer(f), couleur=CREME,
-                       police=PETIT, width=16)
-            b.pack(fill="x", pady=3)
-        Bouton(menu, "Actualiser", lambda: self.tracer(self.graphe_actuel),
-               couleur=BEIGE_FONCE, police=PETIT).pack(fill="x", pady=(16, 0))
-
-        self.figure = Figure(figsize=(7, 4.4), dpi=100, facecolor=CREME)
-        self.canvas_graphe = FigureCanvasTkAgg(self.figure, master=self.zone_graphe)
-        self.canvas_graphe.get_tk_widget().pack(fill="both", expand=True, padx=6, pady=6)
-        self.graphe_actuel = GRAPHIQUES[0][1]
-
-    def maj_indicateurs(self):
-        """Petites cases de chiffres clés en haut de l'onglet statistiques."""
-        for w in self.indicateurs.winfo_children():
-            w.destroy()
-        visites = lire_csv(FICHIER_VISITEURS)
-        notes = lire_csv(FICHIER_SATISFACTION)
-        parrainages = lire_csv(FICHIER_PARRAINAGES)
-        moyenne = (sum(int(n["note_globale"]) for n in notes) / len(notes)) if notes else 0
-        chiffres = [("Avis reçus", str(len(visites))),
-                    ("Visiteurs", str(sum(int(v["nombre_visiteurs"]) for v in visites))),
-                    ("Note globale moyenne", f"{moyenne:.2f} / 5" if notes else "—"),
-                    ("Parrainages", str(len(parrainages))),
-                    ("Dons récoltés", f"{sum(float(p['montant']) for p in parrainages):.0f} €"),
-                    ("Animaux à surveiller",
-                     str(sum(1 for a in self.zoo.animaux if a.sante != "Bonne santé")))]
-        for titre, valeur in chiffres:
-            case = carte(self.indicateurs, padx=12, pady=6)
-            case.pack(side="left", padx=(0, 8), fill="x", expand=True)
-            tk.Label(case, text=valeur, font=(POLICE, 16, "bold"), bg=CREME, fg=NOIR).pack()
-            tk.Label(case, text=titre, font=PETIT, bg=CREME, fg=NOIR).pack()
-
-    def tracer(self, fonction):
-        """Trace le graphique demandé dans la zone de droite."""
-        self.graphe_actuel = fonction
-        self.figure.clear()
-        ax = self.figure.add_subplot(111)
-        if not fonction(ax):
-            ax.axis("off")
-            ax.text(0.5, 0.5, "Pas encore de données pour ce graphique.\n"
-                              "Elles apparaîtront après les premiers avis de visiteurs.",
-                    ha="center", va="center", fontsize=12)
-        self.figure.tight_layout()
-        self.canvas_graphe.draw()
-
-    # ========================================================================
-    # Onglet 3 : journal des mails
-    # ========================================================================
-    def construire_mails(self):
-        cadre = carte(self.onglet_mails, padx=12, pady=12)
-        cadre.pack(fill="both", expand=True, padx=10, pady=10)
-        haut = tk.Frame(cadre, bg=CREME)
-        haut.pack(fill="x", pady=(0, 8))
-        tk.Label(haut, font=PETIT, bg=CREME, fg=NOIR, justify="left",
-                 text="Mails envoyés automatiquement aux parrains (envoi simulé : "
-                      "ils sont enregistrés dans data/mails_envoyes.txt).").pack(side="left")
-        Bouton(haut, "Actualiser", self.maj_mails, couleur=BEIGE_FONCE,
-               police=PETIT).pack(side="right")
-        self.texte_mails = tk.Text(cadre, font=("Courier", 11), bg=CREME, fg=NOIR, relief="flat",
-                                   wrap="word", padx=8, pady=6)
-        barre = ttk.Scrollbar(cadre, orient="vertical", command=self.texte_mails.yview)
-        self.texte_mails.config(yscrollcommand=barre.set)
-        barre.pack(side="right", fill="y")
-        self.texte_mails.pack(fill="both", expand=True)
-
-    def maj_mails(self):
-        self.texte_mails.config(state="normal")
-        self.texte_mails.delete("1.0", "end")
-        self.texte_mails.insert("1.0", lire_journal_mails() or "Aucun mail envoyé pour l'instant.")
-        self.texte_mails.config(state="disabled")
-        self.texte_mails.see("end")
-
-    # ========================================================================
-    def changement_onglet(self, event=None):
-        """Met à jour l'onglet qui vient d'être ouvert (les données ont pu changer)."""
-        onglet = self.onglets.nametowidget(self.onglets.select())
-        if onglet is self.onglet_stats:
-            self.maj_indicateurs()
-            if MATPLOTLIB:
-                self.tracer(self.graphe_actuel)
-        elif onglet is self.onglet_mails:
-            self.maj_mails()
-
-    def deconnexion(self):
-        if messagebox.askyesno("Déconnexion", "Voulez-vous vous déconnecter ?", parent=self):
-            self.app.afficher_accueil()

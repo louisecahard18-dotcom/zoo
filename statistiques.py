@@ -1,12 +1,4 @@
-"""
-Graphiques construits à partir des fichiers CSV remplis par les visiteurs.
 
-Chaque fonction reçoit un « axe » matplotlib (ax) et y trace un graphique.
-Elle renvoie False s'il n'y a pas encore de données à afficher.
-Ces fonctions peuvent aussi être utilisées en dehors de l'interface :
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(); graphe_tranches_age(ax); plt.show()
-"""
 
 from donnees import (lire_csv, FICHIER_AGES, FICHIER_ORIGINE, FICHIER_SATISFACTION,
                      FICHIER_VISITEURS, FICHIER_PARRAINAGES, TRANCHES_AGE, GENRES)
@@ -15,7 +7,7 @@ VERTS = ["#3E6B48", "#5E8F5F", "#7FAE7F", "#A9CBA4", "#CFE2C6", "#E3D5B8"]
 
 
 def compter(lignes, colonne):
-    """Renvoie un dictionnaire {valeur: nombre d'apparitions} pour une colonne."""
+ 
     compteur = {}
     for ligne in lignes:
         valeur = ligne[colonne]
@@ -24,7 +16,7 @@ def compter(lignes, colonne):
 
 
 def habiller(ax, titre):
-    """Mise en forme commune : titre, fond, suppression des bordures inutiles."""
+   
     ax.set_title(titre, fontsize=13, fontweight="bold", color="#1C1C1C")
     ax.set_facecolor("#FCF9F2")
     for cote in ("top", "right"):
@@ -62,7 +54,7 @@ def graphe_pays(ax):
     if not lignes:
         return False
     compteur = compter(lignes, "pays")
-    pays = sorted(compteur, key=compteur.get)        # du moins au plus fréquent
+    pays = sorted(compteur, key=compteur.get)       
     ax.barh(pays, [compteur[p] for p in pays], color=VERTS[1])
     ax.set_xlabel("Nombre de répondants")
     habiller(ax, "Origine des visiteurs (pays)")
@@ -88,7 +80,7 @@ def graphe_satisfaction(ax):
     criteres = [("note_proprete", "Propreté"),
                 ("note_infrastructures", "Infrastructures"),
                 ("note_globale", "Note globale")]
-    # Pour chaque critère : nombre de notes 1, 2, 3, 4 et 5 (barres groupées)
+   
     largeur = 0.15
     for note in range(1, 6):
         hauteurs = [sum(1 for l in lignes if int(l[col]) == note) for col, _ in criteres]
@@ -111,10 +103,10 @@ def graphe_frequentation(ax):
     par_jour = {}
     for l in lignes:
         par_jour[l["date_visite"]] = par_jour.get(l["date_visite"], 0) + int(l["nombre_visiteurs"])
-    jours = sorted(par_jour)            # les dates AAAA-MM-JJ se trient correctement
+    jours = sorted(par_jour)            
     ax.plot(jours, [par_jour[j] for j in jours], marker="o", color=VERTS[0])
     ax.fill_between(jours, [par_jour[j] for j in jours], color=VERTS[3], alpha=0.5)
-    # On n'affiche qu'une date sur n pour que l'axe reste lisible
+    
     pas = max(1, len(jours) // 10)
     ax.set_xticks(jours[::pas])
     ax.set_xticklabels([j[8:10] + "/" + j[5:7] for j in jours[::pas]], rotation=30)
@@ -130,14 +122,14 @@ def graphe_parrainages(ax):
     dons = {}
     for l in lignes:
         dons[l["animal"]] = dons.get(l["animal"], 0) + float(l["montant"])
-    animaux = sorted(dons, key=dons.get)[-12:]       # les 12 animaux les plus parrainés
+    animaux = sorted(dons, key=dons.get)[-12:]       
     ax.barh(animaux, [dons[a] for a in animaux], color=VERTS[1])
     ax.set_xlabel("Total des dons (€)")
     habiller(ax, "Dons de parrainage par animal")
     return True
 
 
-# Liste utilisée par l'interface admin pour créer les boutons
+
 GRAPHIQUES = [
     ("Tranches d'âge", graphe_tranches_age),
     ("Genres", graphe_genres),

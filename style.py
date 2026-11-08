@@ -1,25 +1,20 @@
-"""
-Charte graphique de l'application : couleurs (vert et beige, textes en noir),
-polices et widgets personnalisés réutilisés dans toutes les fenêtres.
-"""
+
 
 import os
 import tkinter as tk
 from tkinter import ttk
 
-# ----------------------------------------------------------------------------
-# Couleurs
-# ----------------------------------------------------------------------------
-VERT_FONCE = "#3E6B48"     # bordures, logo, détails
-VERT_CLAIR = "#A9CBA4"     # boutons
-VERT_PALE = "#D7E7D0"      # fonds de bandeaux
-BEIGE = "#F3ECDC"          # fond des fenêtres
-BEIGE_FONCE = "#E3D5B8"    # bordures des cartes
-CREME = "#FCF9F2"          # fond des cartes et des champs
-NOIR = "#1C1C1C"           # tous les textes
-ETOILE = "#D9A520"         # étoiles des notes
 
-# Couleur de fond des vignettes selon la classification
+VERT_FONCE = "#3E6B48"    
+VERT_CLAIR = "#A9CBA4"     
+VERT_PALE = "#D7E7D0"      
+BEIGE = "#F3ECDC"          
+BEIGE_FONCE = "#E3D5B8"    
+CREME = "#FCF9F2"          
+NOIR = "#1C1C1C"           
+ETOILE = "#D9A520"         
+
+
 COULEURS_CLASSES = {
     "Mammifère": "#C9DDB8",
     "Oiseau": "#E8DCB5",
@@ -28,7 +23,7 @@ COULEURS_CLASSES = {
     "Poisson": "#C4DDD5",
 }
 
-# Pastille de couleur selon l'état de santé (le texte, lui, reste noir)
+
 COULEURS_SANTE = {
     "Bonne santé": "#5E9E5E",
     "Sous surveillance": "#E0B341",
@@ -38,9 +33,7 @@ COULEURS_SANTE = {
     "Gestante": "#8E7CC3",
 }
 
-# ----------------------------------------------------------------------------
-# Polices
-# ----------------------------------------------------------------------------
+
 POLICE = "Helvetica"
 TITRE = (POLICE, 30, "bold")
 SOUS_TITRE = (POLICE, 18, "bold")
@@ -51,7 +44,7 @@ PETIT_GRAS = (POLICE, 10, "bold")
 
 
 def configurer_ttk(fenetre):
-    """Applique les couleurs du zoo aux widgets ttk (listes déroulantes, onglets...)."""
+    
     s = ttk.Style(fenetre)
     s.theme_use("clam")
     s.configure(".", background=BEIGE, foreground=NOIR, font=TEXTE)
@@ -70,7 +63,7 @@ def configurer_ttk(fenetre):
     s.map("TCheckbutton", background=[("active", CREME)])
     s.configure("Vertical.TScrollbar", background=VERT_CLAIR,
                 troughcolor=BEIGE, bordercolor=BEIGE, arrowcolor=NOIR)
-    # Couleurs de la liste qui s'ouvre sous les Combobox
+
     fenetre.option_add("*TCombobox*Listbox.background", CREME)
     fenetre.option_add("*TCombobox*Listbox.foreground", NOIR)
     fenetre.option_add("*TCombobox*Listbox.selectBackground", VERT_CLAIR)
@@ -78,14 +71,9 @@ def configurer_ttk(fenetre):
     fenetre.option_add("*TCombobox*Listbox.font", TEXTE)
 
 
-# ----------------------------------------------------------------------------
-# Widgets personnalisés
-# ----------------------------------------------------------------------------
+
 class Bouton(tk.Label):
-    """
-    Bouton vert à texte noir. On utilise un Label cliquable plutôt qu'un
-    tk.Button car, sous macOS, tk.Button ignore la couleur de fond.
-    """
+  
 
     def __init__(self, parent, texte, commande, couleur=VERT_CLAIR, police=GRAS, **options):
         super().__init__(parent, text=texte, bg=couleur, fg=NOIR, font=police,
@@ -96,14 +84,14 @@ class Bouton(tk.Label):
 
 
 def carte(parent, **options):
-    """Cadre crème avec une fine bordure beige : sert de « carte » pour regrouper des éléments."""
+
     return tk.Frame(parent, bg=CREME, highlightthickness=1,
                     highlightbackground=BEIGE_FONCE, highlightcolor=BEIGE_FONCE,
                     **options)
 
 
 def champ_texte(parent, largeur=24, **options):
-    """Zone de saisie aux couleurs du zoo."""
+
     return tk.Entry(parent, width=largeur, font=TEXTE, bg=CREME, fg=NOIR,
                     relief="flat", highlightthickness=1,
                     highlightbackground=BEIGE_FONCE, highlightcolor=VERT_FONCE,
@@ -111,7 +99,7 @@ def champ_texte(parent, largeur=24, **options):
 
 
 class NoteEtoiles(tk.Frame):
-    """Note de 1 à 5 sous forme d'étoiles cliquables. self.note vaut 0 tant que rien n'est choisi."""
+
 
     def __init__(self, parent, fond=CREME):
         super().__init__(parent, bg=fond)
@@ -138,14 +126,13 @@ class NoteEtoiles(tk.Frame):
                                   "Bien", "Excellent"][n])
 
 
-# ----------------------------------------------------------------------------
-# Dessins (logo et vignettes d'animaux)
-# ----------------------------------------------------------------------------
+
 def dessiner_logo(canvas, x, y, r):
-    """Dessine le logo du zoo (une empreinte de patte dans un cercle) centré en (x, y)."""
+    
     canvas.create_oval(x - r, y - r, x + r, y + r, fill=VERT_PALE,
                        outline=VERT_FONCE, width=3)
-    # coussinet principal
+   
+    
     canvas.create_oval(x - 0.38 * r, y - 0.05 * r, x + 0.38 * r, y + 0.55 * r,
                        fill=VERT_FONCE, outline="")
     # quatre doigts
@@ -155,13 +142,12 @@ def dessiner_logo(canvas, x, y, r):
                            cy + 0.19 * r, fill=VERT_FONCE, outline="")
 
 
-# Cache des photos déjà chargées (Tkinter oublie une image qui n'est plus
-# référencée par une variable : il faut donc les garder en mémoire).
+
 _photos = {}
 
 
 def charger_photo(animal):
-    """Renvoie la photo de l'animal (tk.PhotoImage) ou None si elle n'existe pas."""
+    
     chemin = animal.chemin_photo()
     if chemin not in _photos:
         try:
@@ -172,11 +158,7 @@ def charger_photo(animal):
 
 
 def vignette_animal(parent, animal, largeur=176, hauteur=124, fond=CREME):
-    """
-    Renvoie un Canvas montrant la photo de l'animal. S'il n'y a pas de photo
-    dans images/, on dessine une vignette de remplacement (initiale de
-    l'animal sur un fond de la couleur de sa classe).
-    """
+   
     c = tk.Canvas(parent, width=largeur, height=hauteur, bg=fond,
                   highlightthickness=0, cursor="hand2")
     photo = charger_photo(animal)
@@ -195,7 +177,7 @@ def vignette_animal(parent, animal, largeur=176, hauteur=124, fond=CREME):
 
 
 def pastille_sante(parent, sante, fond=CREME):
-    """Petit cadre « ● état de santé » (pastille colorée, texte noir)."""
+   
     cadre = tk.Frame(parent, bg=fond)
     tk.Label(cadre, text="●", fg=COULEURS_SANTE.get(sante, NOIR), bg=fond,
              font=PETIT).pack(side="left")
