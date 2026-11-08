@@ -53,7 +53,10 @@ def telecharger(url):
         except urllib.error.HTTPError as erreur:
             if erreur.code != 429 or essai == 5:
                 raise
-            time.sleep(5 * (essai + 1))
+        except (TimeoutError, urllib.error.URLError):     # serveur trop lent : on réessaie
+            if essai == 5:
+                raise
+        time.sleep(5 * (essai + 1))
 
 
 def lire_json(url):
