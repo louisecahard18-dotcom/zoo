@@ -46,7 +46,9 @@ MOTS_INTERDITS = ["map", "carte", "range", "distribution", "repartition", "statu
 
 # Photos vérifiées à la main qui ne montrent pas l'animal
 FICHIERS_EXCLUS = ["File:Funchal_(Madeira,_Portugal),_Rua_de_Santa_Maria_58_--_2025_--_0838.jpg",
-                   "File:Arctic_ocean_drift_ice,_the_realm_of_the_polar_bear.jpg"]
+                   "File:Arctic_ocean_drift_ice,_the_realm_of_the_polar_bear.jpg",
+                   "File:654_Rives_La%C3%AFta_Guidel.jpg",
+                   "File:653_Rives_La%C3%AFta_Guidel.jpg"]
 
 
 def telecharger(url):
