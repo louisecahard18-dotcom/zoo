@@ -19,12 +19,20 @@ except ImportError:
 SERVEUR = "smtp.gmail.com"
 
 
+def se_connecter(serveur, mot_de_passe):
+    serveur.ehlo()
+    # une seule méthode de connexion : si le mot de passe est refusé, Gmail donne une erreur
+    # claire (« Username and Password not accepted ») au lieu de couper la connexion
+    serveur.esmtp_features["auth"] = "PLAIN"
+    serveur.login(ADRESSE_ZOO, mot_de_passe)
+
+
 def envoyer_par_gmail(message):
     mot_de_passe = MOT_DE_PASSE.replace(" ", "")     # le code Gmail s'affiche avec des espaces
     try:
         # d'abord le port 465 (connexion chiffrée dès le début)
         with smtplib.SMTP_SSL(SERVEUR, 465, timeout=10) as serveur:
-            serveur.login(ADRESSE_ZOO, mot_de_passe)
+            se_connecter(serveur, mot_de_passe)
             serveur.send_message(message)
     except smtplib.SMTPAuthenticationError:
         raise                                         # mauvais mot de passe : inutile de réessayer
@@ -32,7 +40,7 @@ def envoyer_par_gmail(message):
         # le port 465 est parfois bloqué (wifi d'école, antivirus) : on essaie le port 587
         with smtplib.SMTP(SERVEUR, 587, timeout=10) as serveur:
             serveur.starttls()
-            serveur.login(ADRESSE_ZOO, mot_de_passe)
+            se_connecter(serveur, mot_de_passe)
             serveur.send_message(message)
 
 
