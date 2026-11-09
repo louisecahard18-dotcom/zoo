@@ -17,7 +17,23 @@ except ImportError:
     MOT_DE_PASSE = ""
 
 SERVEUR = "smtp.gmail.com"
-PORT = 465
+
+
+def envoyer_par_gmail(message):
+    mot_de_passe = MOT_DE_PASSE.replace(" ", "")     # le code Gmail s'affiche avec des espaces
+    try:
+        # d'abord le port 465 (connexion chiffrée dès le début)
+        with smtplib.SMTP_SSL(SERVEUR, 465, timeout=10) as serveur:
+            serveur.login(ADRESSE_ZOO, mot_de_passe)
+            serveur.send_message(message)
+    except smtplib.SMTPAuthenticationError:
+        raise                                         # mauvais mot de passe : inutile de réessayer
+    except OSError:
+        # le port 465 est parfois bloqué (wifi d'école, antivirus) : on essaie le port 587
+        with smtplib.SMTP(SERVEUR, 587, timeout=10) as serveur:
+            serveur.starttls()
+            serveur.login(ADRESSE_ZOO, mot_de_passe)
+            serveur.send_message(message)
 
 
 def envoyer_mail(destinataire, sujet, texte, photos=()):
@@ -36,9 +52,7 @@ def envoyer_mail(destinataire, sujet, texte, photos=()):
         statut = "non envoyé (fichier config_mail.py manquant)"
     else:
         try:
-            with smtplib.SMTP_SSL(SERVEUR, PORT, timeout=10) as serveur:
-                serveur.login(ADRESSE_ZOO, MOT_DE_PASSE)
-                serveur.send_message(message)
+            envoyer_par_gmail(message)
             statut = "envoyé"
         except OSError as erreur:          # pas d'internet, mauvais mot de passe...
             statut = f"non envoyé ({erreur})"
