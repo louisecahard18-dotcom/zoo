@@ -7,10 +7,7 @@ from datetime import date
 from donnees import GENRES, TRANCHES_AGE, PAYS, enregistrer_avis
 from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
                    SOUS_TITRE, TEXTE, GRAS, PETIT, POLICE,
-                   Bouton, carte, champ_texte, NoteEtoiles)
-
-MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
-        "août", "septembre", "octobre", "novembre", "décembre"]
+                   Bouton, carte, champ_texte, NoteEtoiles, Calendrier)
 
 
 def nom_valide(texte):
@@ -65,18 +62,8 @@ class FenetreSaisie(tk.Frame):
         self.titre_section(droite, "Votre visite")
 
         
-        aujourdhui = date.today()
-        cadre_date = tk.Frame(droite, bg=CREME)
-        self.jour = ttk.Spinbox(cadre_date, from_=1, to=31, width=4, font=TEXTE)
-        self.jour.set(aujourdhui.day)
-        self.mois = ttk.Combobox(cadre_date, values=MOIS, state="readonly", width=10)
-        self.mois.current(aujourdhui.month - 1)
-        self.annee = ttk.Spinbox(cadre_date, from_=2020, to=aujourdhui.year, width=6,
-                                 font=TEXTE)
-        self.annee.set(aujourdhui.year)
-        for w in (self.jour, self.mois, self.annee):
-            w.pack(side="left", padx=(0, 6))
-        self.ligne(droite, 1, "Date de la visite *", cadre_date)
+        self.calendrier = Calendrier(droite)
+        self.ligne(droite, 1, "Date de la visite *", self.calendrier)
 
       
         self.note_proprete = NoteEtoiles(droite)
@@ -111,14 +98,6 @@ class FenetreSaisie(tk.Frame):
                  anchor="w").grid(row=rang, column=0, sticky="w", pady=7, padx=(0, 16))
         widget.grid(row=rang, column=1, sticky="w", pady=7)
 
-    def lire_date(self):
-   
-        try:
-            d = date(int(self.annee.get()), self.mois.current() + 1, int(self.jour.get()))
-        except ValueError:
-            return None
-        return d
-
  
     def valider(self):
       
@@ -140,10 +119,8 @@ class FenetreSaisie(tk.Frame):
         if not nb.isdigit() or not 1 <= int(nb) <= 50:
             erreurs.append("Le nombre de personnes doit être entre 1 et 50.")
 
-        d = self.lire_date()
-        if d is None:
-            erreurs.append("La date de la visite n'existe pas.")
-        elif d > date.today():
+        d = self.calendrier.date
+        if d > date.today():
             erreurs.append("La date de la visite est incorrecte.")
 
         for nom_note, note in [("propreté", self.note_proprete),

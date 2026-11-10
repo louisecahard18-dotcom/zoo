@@ -1,8 +1,10 @@
 
 
+import calendar
 import os
 import tkinter as tk
 from tkinter import ttk
+from datetime import date
 
 
 VERT_FONCE = "#3E6B48"    
@@ -125,6 +127,77 @@ class NoteEtoiles(tk.Frame):
         self.legende.config(text=["", "Très mauvais", "Mauvais", "Moyen",
                                   "Bien", "Excellent"][n])
 
+
+
+NOMS_MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
+             "août", "septembre", "octobre", "novembre", "décembre"]
+
+
+class Calendrier(tk.Frame):
+    # petit calendrier : on clique sur un jour pour le choisir, self.date contient le jour choisi
+
+    def __init__(self, parent, fond=CREME):
+        super().__init__(parent, bg=fond, highlightthickness=1, highlightbackground=BEIGE_FONCE)
+        self.fond = fond
+        self.date = date.today()
+        self.annee = self.date.year
+        self.mois = self.date.month
+
+        haut = tk.Frame(self, bg=VERT_PALE)
+        haut.pack(fill="x")
+        Bouton(haut, "◀", self.mois_precedent, couleur=VERT_PALE, police=PETIT_GRAS).pack(side="left")
+        Bouton(haut, "▶", self.mois_suivant, couleur=VERT_PALE, police=PETIT_GRAS).pack(side="right")
+        self.titre = tk.Label(haut, font=GRAS, bg=VERT_PALE, fg=NOIR)
+        self.titre.pack(side="left", expand=True)
+
+        self.grille = tk.Frame(self, bg=fond)
+        self.grille.pack(padx=6, pady=6)
+        self.afficher()
+
+    def afficher(self):
+        for widget in self.grille.winfo_children():
+            widget.destroy()
+        self.titre.config(text=f"{NOMS_MOIS[self.mois - 1]} {self.annee}")
+
+        for col, nom in enumerate(["L", "M", "M", "J", "V", "S", "D"]):
+            tk.Label(self.grille, text=nom, font=PETIT_GRAS, width=3, bg=self.fond,
+                     fg=NOIR).grid(row=0, column=col)
+
+        # monthcalendar donne les semaines du mois, avec 0 pour les cases vides
+        for ligne, semaine in enumerate(calendar.monthcalendar(self.annee, self.mois), start=1):
+            for col, jour in enumerate(semaine):
+                if jour == 0:
+                    continue
+                ce_jour = date(self.annee, self.mois, jour)
+                couleur = VERT_CLAIR if ce_jour == self.date else self.fond
+                police = PETIT_GRAS if ce_jour == date.today() else PETIT
+                case = tk.Label(self.grille, text=jour, font=police, width=3, bg=couleur, fg=NOIR,
+                                cursor="hand2")
+                case.grid(row=ligne, column=col, padx=1, pady=1)
+                case.bind("<Button-1>", lambda e, d=ce_jour: self.choisir(d))
+
+    def choisir(self, jour):
+        self.date = jour
+        self.afficher()
+
+    def mois_precedent(self):
+        if self.mois == 1:
+            self.mois = 12
+            self.annee = self.annee - 1
+        else:
+            self.mois = self.mois - 1
+        self.afficher()
+
+    def mois_suivant(self):
+        # on ne va pas plus loin que le mois actuel : la visite ne peut pas être dans le futur
+        if (self.annee, self.mois) >= (date.today().year, date.today().month):
+            return
+        if self.mois == 12:
+            self.mois = 1
+            self.annee = self.annee + 1
+        else:
+            self.mois = self.mois + 1
+        self.afficher()
 
 
 def dessiner_logo(canvas, x, y, r):
