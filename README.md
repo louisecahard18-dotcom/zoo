@@ -28,8 +28,7 @@ Il faut Tkinter et `matplotlib` (déjà installés avec Anaconda / Spyder).
    * *Fiches des animaux* : modification des animaux, signalement d'une naissance (mails aux parrains) ;
    * *Statistiques des animaux* : proportion d'animaux malades et gestants, état de santé,
      classement des animaux les plus parrainés avec l'argent versé ;
-   * *Statistiques des visiteurs* : chiffres clés, graphiques (âge, genre, pays, satisfaction,
-     fréquentation), dons libres ;
+   * *Statistiques des visiteurs* : chiffres clés, graphiques (âge, genre, pays, satisfaction), dons libres ;
    * *Historique des mails* : tous les mails envoyés (ou non envoyés) par le site.
 
 ## Comptes administrateur
@@ -54,6 +53,19 @@ Les mails partent depuis une adresse Gmail du zoo :
 `config_mail.py` contient un mot de passe : il est ignoré par git, il ne faut pas le mettre sur GitHub.
 Sans ce fichier (ou sans internet), le site fonctionne quand même : les mails sont marqués
 « non envoyé » dans l'historique de l'espace administrateur.
+
+## Sons
+
+Les sons sont joués avec `pygame` (`pip install pygame`). Sans pygame, le site marche sans son.
+
+* `sons/fanfare.mp3` : musique jouée après un don ou un parrainage (fichier à déposer dans `sons/`) ;
+* `sons/<id>.mp3` : cri de l'animal (3 secondes), joué quand on ouvre sa fiche depuis la liste ;
+* `sons/credits.csv` : auteur et licence de chaque enregistrement.
+
+## QR code
+
+`images/qr_code.png` est joint à tous les mails envoyés aux parrains (remerciement, changement
+de santé, naissance).
 
 ## Photos
 

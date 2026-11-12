@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 import mails
+from sons import effet_musique
 from donnees import MONTANT_PARRAINAGE, email_valide, parrains, enregistrer_parrainage
 from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
                    SOUS_TITRE, TEXTE, GRAS, POLICE,
@@ -80,6 +81,7 @@ class FenetreParrainage(tk.Frame):
             return
 
         enregistrer_parrainage(self.animal, email)
+        effet_musique()
         if mails.mail_parrainage(self.animal, email):
             fin = f"Un mail de remerciement avec 3 photos exclusives a été envoyé à {email}."
         else:

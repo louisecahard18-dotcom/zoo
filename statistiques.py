@@ -1,7 +1,7 @@
 
 
 from donnees import (lire_csv, FICHIER_AGES, FICHIER_ORIGINE, FICHIER_SATISFACTION,
-                     FICHIER_VISITEURS, FICHIER_PARRAINAGES, TRANCHES_AGE, GENRES,
+                     FICHIER_PARRAINAGES, TRANCHES_AGE, GENRES,
                      ETATS_SANTE, nombre_de_mois)
 from style import COULEURS_SANTE
 
@@ -86,31 +86,11 @@ def graphe_satisfaction(ax):
     return True
 
 
-def graphe_frequentation(ax):
-    lignes = lire_csv(FICHIER_VISITEURS)
-    if not lignes:
-        return False
-    par_jour = {}
-    for l in lignes:
-        par_jour[l["date_visite"]] = par_jour.get(l["date_visite"], 0) + int(l["nombre_visiteurs"])
-    jours = sorted(par_jour)            
-    ax.plot(jours, [par_jour[j] for j in jours], marker="o", color=VERTS[0])
-    ax.fill_between(jours, [par_jour[j] for j in jours], color=VERTS[3], alpha=0.5)
-    
-    pas = max(1, len(jours) // 10)
-    ax.set_xticks(jours[::pas])
-    ax.set_xticklabels([j[8:10] + "/" + j[5:7] for j in jours[::pas]], rotation=30)
-    ax.set_ylabel("Visiteurs")
-    habiller(ax, "Nombre de visiteurs par jour")
-    return True
-
-
 GRAPHIQUES = [
     ("Tranches d'âge", graphe_tranches_age),
     ("Genres", graphe_genres),
     ("Pays", graphe_pays),
     ("Satisfaction", graphe_satisfaction),
-    ("Fréquentation", graphe_frequentation),
 ]
 
 

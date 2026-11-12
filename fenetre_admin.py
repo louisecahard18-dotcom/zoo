@@ -8,7 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import mails
 from donnees import (verifier_identifiants, lire_csv, parrains, CLASSIFICATIONS, ETATS_SANTE,
-                     FICHIER_VISITEURS, FICHIER_SATISFACTION, FICHIER_DONS)
+                     FICHIER_SATISFACTION, FICHIER_DONS)
 from statistiques import GRAPHIQUES, graphe_sante, classement_parrainages
 from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
                    SOUS_TITRE, TEXTE, GRAS, PETIT, PETIT_GRAS, POLICE,
@@ -190,9 +190,19 @@ class FenetreAdmin(tk.Frame):
         self.nb_bebes = ttk.Spinbox(cadre_naissance, from_=1, to=30, width=4, font=TEXTE)
         self.nb_bebes.pack(side="left")
 
-        self.info_parrains = tk.Label(droite, font=PETIT, bg=CREME, fg=NOIR, justify="left",
-                                      wraplength=600)
-        self.info_parrains.pack(anchor="w", pady=(10, 0))
+        # la liste des e-mails des parrains de l'animal
+        self.info_parrains = tk.Label(droite, font=PETIT_GRAS, bg=CREME, fg=NOIR)
+        self.info_parrains.pack(anchor="w", pady=(10, 2))
+        cadre_parrains = tk.Frame(droite, bg=CREME)
+        cadre_parrains.pack(anchor="w")
+        barre_parrains = ttk.Scrollbar(cadre_parrains, orient="vertical")
+        self.liste_parrains = tk.Listbox(cadre_parrains, width=44, height=5, font=PETIT,
+                                         bg=CREME, fg=NOIR, relief="flat",
+                                         highlightthickness=1, highlightbackground=BEIGE_FONCE,
+                                         activestyle="none", yscrollcommand=barre_parrains.set)
+        barre_parrains.config(command=self.liste_parrains.yview)
+        self.liste_parrains.pack(side="left")
+        barre_parrains.pack(side="left", fill="y")
 
         boutons = tk.Frame(droite, bg=CREME)
         boutons.pack(side="bottom", fill="x")
@@ -232,10 +242,11 @@ class FenetreAdmin(tk.Frame):
         self.naissance.set(False)
         self.nb_bebes.set(1)
 
-        nb = len(parrains(animal))
-        self.info_parrains.config(
-            text=f"{animal.nom} a {nb} parrain(s). Ils reçoivent un mail si l'état de santé "
-                 f"change ou en cas de naissance.")
+        emails = parrains(animal)
+        self.info_parrains.config(text=f"Parrains de {animal.nom} ({len(emails)}) :")
+        self.liste_parrains.delete(0, "end")
+        for email in emails:
+            self.liste_parrains.insert("end", email)
         self.rafraichir_liste()
 
     def enregistrer(self):
@@ -347,10 +358,8 @@ class FenetreAdmin(tk.Frame):
     def construire_stats_visiteurs(self):
         onglet = self.onglet_stat_visiteurs
         vider(onglet)
-        visites = lire_csv(FICHIER_VISITEURS)
         notes = lire_csv(FICHIER_SATISFACTION)
         dons = lire_csv(FICHIER_DONS)
-        nb_visiteurs = sum(int(v["nombre_visiteurs"]) for v in visites)
         if notes:
             moyenne = f"{sum(int(n['note_globale']) for n in notes) / len(notes):.2f} / 5"
         else:
@@ -359,8 +368,7 @@ class FenetreAdmin(tk.Frame):
 
         chiffres = tk.Frame(onglet, bg=BEIGE)
         chiffres.pack(fill="x", padx=10, pady=(10, 0))
-        self.case_chiffre(chiffres, str(len(visites)), "Avis reçus")
-        self.case_chiffre(chiffres, str(nb_visiteurs), "Visiteurs")
+        self.case_chiffre(chiffres, str(len(notes)), "Avis reçus")
         self.case_chiffre(chiffres, moyenne, "Note globale moyenne")
         self.case_chiffre(chiffres, str(len(dons)), "Dons libres")
         self.case_chiffre(chiffres, f"{total_dons:.0f} €", "Montant des dons")

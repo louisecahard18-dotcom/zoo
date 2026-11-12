@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 import mails
+from sons import effet_musique
 from donnees import NOM_DU_ZOO, email_valide, enregistrer_don
 from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
                    SOUS_TITRE, TEXTE, GRAS, POLICE,
@@ -73,6 +74,7 @@ class FenetreDon(tk.Frame):
             return
 
         enregistrer_don(round(montant, 2), email)
+        effet_musique()
         if mails.mail_don(montant, email):
             fin = f"Un mail de remerciement a été envoyé à {email}."
         else:

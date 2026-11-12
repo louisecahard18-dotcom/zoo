@@ -6,7 +6,7 @@ from datetime import datetime
 from email.message import EmailMessage
 
 from donnees import (NOM_DU_ZOO, MONTANT_PARRAINAGE, FICHIER_MAILS, DOSSIER_DATA,
-                     parrains, credit_photo)
+                     DOSSIER_IMAGES, parrains, credit_photo)
 
 # L'adresse Gmail du zoo et son mot de passe d'application sont dans config_mail.py
 # (fichier à créer à partir de config_mail_exemple.py, à ne pas mettre sur GitHub)
@@ -17,6 +17,10 @@ except ImportError:
     MOT_DE_PASSE = ""
 
 SERVEUR = "smtp.gmail.com"
+
+# QR code joint à tous les mails envoyés aux parrains (caméra de l'enclos en direct)
+FICHIER_QR = os.path.join(DOSSIER_IMAGES, "qr_code.png")
+TEXTE_QR = "Scannez le QR code en pièce jointe pour voir l'enclos en direct."
 
 
 def se_connecter(serveur, mot_de_passe):
@@ -52,8 +56,12 @@ def envoyer_mail(destinataire, sujet, texte, photos=()):
     message.set_content(texte)
     jointes = [chemin for chemin in photos if os.path.exists(chemin)]
     for chemin in jointes:
+        if chemin.endswith(".png"):
+            sorte = "png"
+        else:
+            sorte = "jpeg"
         with open(chemin, "rb") as f:
-            message.add_attachment(f.read(), maintype="image", subtype="jpeg",
+            message.add_attachment(f.read(), maintype="image", subtype=sorte,
                                    filename=os.path.basename(chemin))
 
     if ADRESSE_ZOO == "":
@@ -78,7 +86,7 @@ def noter_dans_historique(destinataire, sujet, texte, photos, statut):
         f.write(f"Sujet  : {sujet}\n")
         f.write(f"Statut : {statut}\n")
         if photos:
-            f.write("Photos : " + ", ".join(os.path.basename(p) for p in photos) + "\n")
+            f.write("Pièces jointes : " + ", ".join(os.path.basename(p) for p in photos) + "\n")
         f.write("\n" + texte + "\n\n")
 
 
@@ -94,7 +102,7 @@ def prevenir_parrains(animal, sujet, texte):
     emails = parrains(animal)
     envoyes = 0
     for email in emails:
-        if envoyer_mail(email, sujet, texte):
+        if envoyer_mail(email, sujet, texte, [FICHIER_QR]):
             envoyes = envoyes + 1
     return envoyes, len(emails)
 
@@ -107,16 +115,18 @@ def mail_parrainage(animal, email):
              f"Votre parrainage de {MONTANT_PARRAINAGE} € par mois est renouvelé "
              f"automatiquement chaque mois. Il nous aide à nourrir et soigner {animal.nom}.\n\n"
              f"Vous trouverez en pièces jointes 3 photos exclusives de {animal.nom}.\n"
+             f"{TEXTE_QR}\n"
              f"Nous vous écrirons si son état de santé change ou en cas de naissance.\n\n"
              f"À bientôt au zoo !\nL'équipe du {NOM_DU_ZOO}\n\n{credits}")
-    return envoyer_mail(email, f"Merci de parrainer {animal.nom} !", texte, photos)
+    return envoyer_mail(email, f"Merci de parrainer {animal.nom} !", texte, photos + [FICHIER_QR])
 
 
 def mail_sante(animal, ancien_etat):
     texte = (f"Bonjour,\n\n"
              f"Vous parrainez {animal.nom} ({animal.espece}) au {NOM_DU_ZOO}.\n"
              f"Son état de santé vient de changer : {ancien_etat} -> {animal.sante}.\n\n"
-             f"Nos soigneurs veillent sur lui chaque jour.\n\n"
+             f"Nos soigneurs veillent sur lui chaque jour.\n"
+             f"{TEXTE_QR}\n\n"
              f"L'équipe du {NOM_DU_ZOO}")
     return prevenir_parrains(animal, f"Des nouvelles de {animal.nom}", texte)
 
@@ -126,6 +136,7 @@ def mail_naissance(animal, nb_bebes):
              f"Nous avons la joie de vous annoncer la naissance de {nb_bebes} bébé(s) "
              f"chez {animal.nom} ({animal.espece}) !\n"
              f"Le groupe compte maintenant {animal.nombre} animaux.\n\n"
+             f"{TEXTE_QR}\n\n"
              f"Merci pour votre parrainage.\n\nL'équipe du {NOM_DU_ZOO}")
     return prevenir_parrains(animal, f"Heureux événement chez {animal.nom} !", texte)
 

@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from donnees import CLASSIFICATIONS, ETATS_SANTE
+from sons import cri_animal
 from style import (BEIGE, CREME, NOIR, VERT_CLAIR, VERT_PALE, BEIGE_FONCE,
                    SOUS_TITRE, TEXTE, GRAS, PETIT, Bouton, carte,
                    vignette_animal, pastille_sante)
@@ -118,6 +119,10 @@ class FenetreAnimaux(tk.Frame):
         pastille_sante(c, animal.sante).pack(pady=(2, 0))
 
        
-        photo.bind("<Button-1>", lambda e: self.app.afficher_fiche(animal))
-        nom.bind("<Button-1>", lambda e: self.app.afficher_fiche(animal))
+        photo.bind("<Button-1>", lambda e: self.ouvrir_fiche(animal))
+        nom.bind("<Button-1>", lambda e: self.ouvrir_fiche(animal))
         return c
+
+    def ouvrir_fiche(self, animal):
+        cri_animal(animal)
+        self.app.afficher_fiche(animal)
