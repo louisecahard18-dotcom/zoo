@@ -38,6 +38,10 @@ const App = {
     const h = await App.sha256('canopee-canal:' + viewerKey);
     return 'cam-' + [...h.slice(0, 16)].map((b) => b.toString(16).padStart(2, '0')).join('');
   },
+  /** Code court du canal (4 caractères), affiché sur l'iPad et l'iPhone pour vérifier qu'ils correspondent. */
+  async channelCode(viewerKey) {
+    return (await App.channelName(viewerKey)).slice(4, 8).toUpperCase();
+  },
   isKey: (k) => typeof k === 'string' && /^[A-Za-z0-9_-]{32}$/.test(k),
   hashParam(name) {
     return new URLSearchParams(location.hash.slice(1)).get(name);

@@ -158,10 +158,11 @@ Tourne l'iPhone à l'horizontale pour une image plus grande.
 | iPad : « Étape manquante : Supabase » | `config.js` pas rempli ou mal recopié | Vérifie l'adresse et la clé, avec les guillemets |
 | iPad : « Accès à la caméra refusé » | Autorisation refusée | **Réglages › Safari › Caméra › Autoriser**, puis recharge |
 | iPhone : « Signal perdu — caméra hors ligne » | La caméra de l'iPad n'est pas démarrée, ou l'iPad est en veille | Sur l'iPad, ouvre l'icône et touche **Démarrer la caméra** |
+| iPhone : « caméra hors ligne » alors que l'iPad filme | Le **code canal** de l'iPhone (sous « caméra hors ligne ») est différent de celui de l'iPad (en bas à droite pendant la diffusion) : le QR code et l'iPad n'ont pas la même clé | Sur l'iPad, touche **Créer une nouvelle clé**, ou, sur une page sans clé, colle le lien du QR code distribué dans « Tu as déjà distribué un QR code ? » |
 | iPhone : reste bloqué sur « Connexion à la caméra… » ou « nouvel essai… » | Le réseau bloque la connexion directe (rare, surtout sur les Wi-Fi d'entreprise) | Essaie un autre réseau. Si c'est fréquent, ajoute un serveur TURN (ci-dessous) |
 | L'iPhone ne trouve jamais la caméra, alors qu'elle tourne | Supabase en pause, ou accès public Realtime désactivé | Tableau de bord Supabase : clique sur **Restore project** s'il est en pause, et vérifie l'étape 1.6 |
 | Page introuvable (404) | GitHub Pages pas encore publié ou mauvaise adresse | Attends quelques minutes et vérifie **Settings › Pages** |
-| L'icône de l'iPad redemande de « créer une clé » | Icône créée avant l'étape 2, ou clé effacée | **Ne crée pas de nouvelle clé** si des QR codes sont imprimés. Rouvre plutôt l'adresse `…/camera.html#cle=…` depuis tes favoris |
+| L'icône de l'iPad redemande de « créer une clé » | Icône créée avant l'étape 2, ou clé effacée | **Ne crée pas de nouvelle clé** si des QR codes sont distribués : colle le lien du QR code (il contient `#v=`) dans la carte « Tu as déjà distribué un QR code ? » |
 
 ## Bon à savoir
 
