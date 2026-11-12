@@ -1,9 +1,0 @@
-{
-  "zooName": "Parc Zoologique",
-  "enclosures": [
-    { "id": "lions",     "cam": "CAM 01", "name": "Enclos des lions" },
-    { "id": "girafes",   "cam": "CAM 02", "name": "Plaine des girafes" },
-    { "id": "pandas",    "cam": "CAM 03", "name": "Maison des pandas roux" },
-    { "id": "manchots",  "cam": "CAM 04", "name": "Bassin des manchots" }
-  ]
-}

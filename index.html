@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1C1C1C">
+  <meta name="robots" content="noindex">
+  <title>Caméra de l'enclos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Affiché quand la page est ouverte sans QR code -->
+  <main class="page hidden" id="landing">
+    <div class="brand" data-label="NOM_ZOO"></div>
+    <h1>Caméra de l'enclos</h1>
+    <p class="sub" id="landingText">Pour voir l'enclos en direct, scannez le QR code qui vous a été remis avec l'appareil photo de votre iPhone.</p>
+  </main>
+
+  <!-- Écran de surveillance -->
+  <div class="monitor offline hidden" id="monitor">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="tint"></div>
+    <canvas class="noise" id="noise"></canvas>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="corner a"></div><div class="corner b"></div><div class="corner c"></div><div class="corner d"></div>
+    <div class="osd">
+      <div class="tl"><span class="rec hidden" id="rec">REC</span></div>
+      <div class="tr" id="clock"></div>
+      <div class="bl"><div class="num" data-label="CAMERA_NUMERO"></div><div data-label="CAMERA_NOM"></div></div>
+      <div class="br" data-label="NOM_ZOO"></div>
+      <div class="center" id="status"><span>Connexion…</span></div>
+    </div>
+    <div class="toolbar hidden" id="toolbar">
+      <button class="secondary" id="fs">Plein écran</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-2.118.0.js"></script>
+  <script src="app.js"></script>
+  <script>
+  (async () => {
+    App.applyLabels();
+    const $ = (id) => document.getElementById(id);
+    const key = App.hashParam('v');
+
+    if (!App.isConfigured() || !App.isKey(key)) {
+      $('landing').classList.remove('hidden');
+      if (!App.isConfigured()) $('landingText').textContent = 'Le site n’est pas encore configuré : renseigner Supabase dans config.js.';
+      return;
+    }
+
+    // ---------- Écran ----------
+    $('monitor').classList.remove('hidden');
+    App.clock($('clock'));
+    App.noise($('noise'));
+    const video = $('video');
+    const setStatus = (text) => {
+      $('status').classList.toggle('hidden', !text);
+      if (text) $('status').firstElementChild.textContent = text;
+      $('monitor').classList.toggle('offline', !!text);
+      $('rec').classList.toggle('hidden', !!text);
+    };
+
+    // Plein écran : disponible sur ordinateur et iPad (pas sur iPhone, où il suffit de tourner le téléphone).
+    if (document.fullscreenEnabled || document.webkitFullscreenEnabled) {
+      $('toolbar').classList.remove('hidden');
+      App.autoHide($('toolbar'));
+      $('fs').onclick = () => {
+        const el = document.documentElement;
+        if (document.fullscreenElement || document.webkitFullscreenElement) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        else (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+      };
+    }
+
+    // ---------- Connexion ----------
+    const me = { role: 'viewer', id: crypto.randomUUID() };
+    let channel = null, pc = null, cameraId = null, cameraPresent = false, lastHello = 0, pcSince = 0;
+
+    const closePc = () => { if (pc) { pc.close(); pc = null; } cameraId = null; video.srcObject = null; };
+    const connected = () => pc && pc.connectionState === 'connected';
+
+    const sayHello = (force) => {
+      if (!force && Date.now() - lastHello < 3000) return;
+      lastHello = Date.now();
+      channel && channel.send('hello', {});
+    };
+
+    channel = await App.joinChannel(key, me, {
+      onStatus(ok) {
+        if (ok) { if (!connected()) sayHello(true); }
+        else if (!connected()) setStatus('Signal perdu\nreconnexion…');
+      },
+      onPeers(peers) {
+        cameraPresent = peers.some((p) => p.role === 'camera');
+        if (!cameraPresent) { closePc(); setStatus('Signal perdu\ncaméra hors ligne'); }
+        else if (!pc) { setStatus('Connexion à la caméra…'); sayHello(); }
+      },
+      async onMessage(event, msg) {
+        if (event === 'offer') {
+          closePc();
+          cameraId = msg.from;
+          pcSince = Date.now();
+          const p = (pc = new RTCPeerConnection({ iceServers: CFG.ICE_SERVERS }));
+          p.onicecandidate = (e) => e.candidate && channel.send('ice', { to: cameraId, candidate: e.candidate.toJSON() });
+          p.ontrack = (e) => { video.srcObject = e.streams[0]; video.play().catch(() => {}); };
+          p.onconnectionstatechange = () => {
+            if (p !== pc) return;
+            if (p.connectionState === 'connected') setStatus('');
+            if (p.connectionState === 'disconnected') setStatus('Signal faible…');
+            if (p.connectionState === 'failed') { closePc(); setStatus('Signal perdu\nnouvel essai…'); }
+          };
+          await p.setRemoteDescription(msg.sdp);
+          await App.flushIce(p);
+          await p.setLocalDescription(await p.createAnswer());
+          channel.send('answer', { to: cameraId, sdp: p.localDescription.toJSON() });
+        }
+        if (event === 'ice' && pc && msg.from === cameraId) App.addIce(pc, msg.candidate);
+        if (event === 'bye' && msg.from === cameraId) { closePc(); setStatus('Signal perdu\ncaméra hors ligne'); }
+      },
+    });
+
+    // Filet de sécurité : si rien n'aboutit, on redemande l'image régulièrement.
+    setInterval(() => {
+      if (!cameraPresent || connected()) return;
+      if (pc && Date.now() - pcSince < 15000) return; // connexion en cours
+      closePc();
+      sayHello();
+    }, 5000);
+
+    // Retour sur Safari après mise en veille de l'iPhone.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !connected()) sayHello(true);
+    });
+    addEventListener('pagehide', () => channel.close());
+  })();
+  </script>
+</body>
+</html>

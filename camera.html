@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Caméra enclos">
+  <meta name="theme-color" content="#3E6B48">
+  <meta name="robots" content="noindex">
+  <title>Caméra de l'iPad</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page" id="setup">
+    <div class="brand" data-label="NOM_ZOO"></div>
+    <h1>Caméra de l'iPad</h1>
+    <p class="sub"><span data-label="CAMERA_NUMERO"></span> — <span data-label="CAMERA_NOM"></span></p>
+
+    <div class="notice warn hidden" id="errBox"></div>
+
+    <!-- Site pas encore configuré -->
+    <section class="card hidden" id="needConfig">
+      <h2>Étape manquante : Supabase</h2>
+      <p>Ouvre le fichier <b>config.js</b> du dépôt GitHub et colle l'adresse <b>Project URL</b> et la clé <b>Publishable key</b> de ton projet Supabase. Recharge ensuite cette page.</p>
+    </section>
+
+    <!-- Première installation -->
+    <section class="card hidden" id="needKey">
+      <h2>Première installation</h2>
+      <p>Cette étape crée la clé secrète de la caméra et le QR code permanent destiné aux parrains. À faire une seule fois, sur l'iPad qui filmera.</p>
+      <button id="createKey">Créer la clé de la caméra</button>
+    </section>
+
+    <!-- Caméra prête -->
+    <div class="hidden" id="ready">
+      <div class="notice" id="bookmarkNotice">
+        <b>Important :</b> l'adresse de cette page contient la clé de la caméra.
+        Ajoute-la à l'écran d'accueil (bouton Partager <span aria-hidden="true">⎙</span> › « Sur l'écran d'accueil ») ou aux favoris, et ouvre-la toujours depuis là.
+        Ne la donne à personne : seul le QR code ci-dessous est destiné aux parrains.
+      </div>
+
+      <section class="card">
+        <h2>1. Lancer la caméra</h2>
+        <p>Pose l'iPad face à l'enclos, branché sur secteur, puis :</p>
+        <button id="start">Démarrer la caméra</button>
+      </section>
+
+      <section class="card">
+        <h2>2. QR code des parrains</h2>
+        <p>Il ouvre directement la vidéo dans Safari. Il reste valable tant que tu ne changes pas la clé.</p>
+        <div class="qr" id="qr"></div>
+        <div class="link" id="viewerLink"></div>
+        <div class="row">
+          <button class="secondary" id="downloadQr">Télécharger le QR code</button>
+          <button class="secondary" id="copyLink">Copier le lien</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Changer la clé</h2>
+        <p class="small">En cas de fuite du QR code : une nouvelle clé rend tous les anciens QR codes inutilisables. Il faudra réimprimer le nouveau et remettre la page à l'écran d'accueil.</p>
+        <button class="danger" id="resetKey">Créer une nouvelle clé</button>
+      </section>
+    </div>
+  </main>
+
+  <!-- Écran de diffusion -->
+  <div class="monitor hidden" id="monitor">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="tint"></div>
+    <canvas class="noise" id="noise"></canvas>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="corner a"></div><div class="corner b"></div><div class="corner c"></div><div class="corner d"></div>
+    <div class="osd">
+      <div class="tl"><span class="rec">REC</span> <span id="viewers"></span></div>
+      <div class="tr" id="clock"></div>
+      <div class="bl"><div class="num" data-label="CAMERA_NUMERO"></div><div data-label="CAMERA_NOM"></div></div>
+      <div class="br" id="net">Connexion…</div>
+    </div>
+    <div class="toolbar" id="toolbar">
+      <button class="secondary" id="flip">Changer de caméra</button>
+      <button class="secondary" id="dim">Écran noir</button>
+      <button class="secondary" id="stop">Arrêter</button>
+    </div>
+  </div>
+  <!-- Écran noir : l'affichage s'éteint mais la diffusion continue. Toucher pour revenir. -->
+  <div id="blackout" class="hidden"></div>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-2.118.0.js"></script>
+  <script src="vendor/qrcode-generator-2.0.4.js"></script>
+  <script src="app.js"></script>
+  <script>
+  (async () => {
+    App.applyLabels();
+    const $ = (id) => document.getElementById(id);
+    const show = (id) => ['needConfig', 'needKey', 'ready'].forEach((x) => $(x).classList.toggle('hidden', x !== id));
+    const error = (msg) => { $('errBox').textContent = msg; $('errBox').classList.toggle('hidden', !msg); };
+    const store = {
+      get: () => { try { return localStorage.getItem('cameraKey'); } catch { return null; } },
+      set: (v) => { try { localStorage.setItem('cameraKey', v); } catch {} },
+    };
+
+    if (!App.isConfigured()) return show('needConfig');
+    if (!window.isSecureContext || !navigator.mediaDevices) {
+      error('La caméra ne fonctionne qu’avec une adresse en https://. Ouvre la page depuis le site GitHub Pages.');
+    }
+
+    let viewerUrl = '';
+
+    // ---------- Clé de la caméra ----------
+    // Elle est conservée dans l'adresse de la page (#cle=…) ET dans la mémoire de Safari.
+    let cameraKey = App.hashParam('cle');
+    if (!App.isKey(cameraKey)) cameraKey = store.get();
+    if (!App.isKey(cameraKey)) { show('needKey'); }
+    else await useKey(cameraKey);
+
+    $('createKey').onclick = () => useKey(App.newCameraKey());
+    $('resetKey').onclick = () => {
+      if (confirm('Créer une nouvelle clé ? Les QR codes déjà distribués ne fonctionneront plus.')) useKey(App.newCameraKey());
+    };
+
+    async function useKey(k) {
+      cameraKey = k;
+      store.set(k);
+      history.replaceState(null, '', `#cle=${k}`);
+      const vKey = await App.viewerKey(k);
+      viewerUrl = new URL(`./#v=${vKey}`, location.href).href;
+      $('qr').innerHTML = App.qrSvg(viewerUrl);
+      $('viewerLink').textContent = viewerUrl;
+      show('ready');
+    }
+
+    $('copyLink').onclick = async () => {
+      try { await navigator.clipboard.writeText(viewerUrl); $('copyLink').textContent = 'Lien copié ✓'; }
+      catch { prompt('Copie ce lien :', viewerUrl); }
+      setTimeout(() => ($('copyLink').textContent = 'Copier le lien'), 2000);
+    };
+
+    // Image PNG imprimable : QR code + nom du zoo et de l'enclos.
+    $('downloadQr').onclick = async () => {
+      const W = 900, H = 1100, c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const g = c.getContext('2d');
+      g.fillStyle = '#FCF9F2'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#3E6B48'; g.fillRect(0, 0, W, 150);
+      g.fillStyle = '#FCF9F2'; g.textAlign = 'center';
+      g.font = '700 52px -apple-system, system-ui, sans-serif';
+      g.fillText(CFG.NOM_ZOO || '', W / 2, 95);
+      const img = new Image();
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(App.qrSvg(viewerUrl));
+      await img.decode();
+      g.fillStyle = '#fff'; g.fillRect(150, 200, 600, 600);
+      g.drawImage(img, 150, 200, 600, 600);
+      g.fillStyle = '#1C1C1C';
+      g.font = '700 46px -apple-system, system-ui, sans-serif';
+      g.fillText(`${CFG.CAMERA_NUMERO || ''} — ${CFG.CAMERA_NOM || ''}`, W / 2, 900, W - 80);
+      g.fillStyle = '#3E6B48';
+      g.font = '400 34px -apple-system, system-ui, sans-serif';
+      g.fillText('Scannez avec l’appareil photo pour voir l’enclos en direct', W / 2, 970, W - 80);
+      c.toBlob((blob) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `qr-${(CFG.CAMERA_NUMERO || 'camera').replace(/\W+/g, '-').toLowerCase()}.png`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      }, 'image/png');
+    };
+
+    // ---------- Diffusion ----------
+    let stream = null, channel = null, facing = 'environment', started = false;
+    const peers = new Map(); // id du parrain -> RTCPeerConnection
+    const me = { role: 'camera', id: crypto.randomUUID() };
+
+    const getStream = () => navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
+    });
+
+    const updateViewers = () => {
+      const n = [...peers.values()].filter((p) => p.connectionState === 'connected').length;
+      $('viewers').textContent = n ? `· ${n} parrain${n > 1 ? 's' : ''}` : '';
+    };
+    const dropPeer = (id) => { peers.get(id)?.close(); peers.delete(id); updateViewers(); };
+
+    async function call(viewerId) {
+      dropPeer(viewerId);
+      const pc = new RTCPeerConnection({ iceServers: CFG.ICE_SERVERS });
+      peers.set(viewerId, pc);
+      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      // L'iPad envoie un flux par parrain : on limite le débit de chacun.
+      for (const s of pc.getSenders()) {
+        const p = s.getParameters();
+        if (p.encodings && p.encodings.length) { p.encodings[0].maxBitrate = 900000; s.setParameters(p).catch(() => {}); }
+      }
+      pc.onicecandidate = (e) => e.candidate && channel.send('ice', { to: viewerId, candidate: e.candidate.toJSON() });
+      pc.onconnectionstatechange = () => {
+        if (peers.get(viewerId) !== pc) return;
+        if (['failed', 'closed'].includes(pc.connectionState)) dropPeer(viewerId);
+        else updateViewers();
+      };
+      await pc.setLocalDescription(await pc.createOffer());
+      channel.send('offer', { to: viewerId, sdp: pc.localDescription.toJSON() });
+    }
+
+    $('start').onclick = async () => {
+      error('');
+      try { stream = await getStream(); }
+      catch (e) {
+        error('Accès à la caméra refusé. Sur l’iPad : Réglages › Safari › Caméra › Autoriser, puis recharge la page.');
+        return;
+      }
+      $('video').srcObject = stream;
+      $('setup').classList.add('hidden');
+      $('monitor').classList.remove('hidden');
+      if (!started) {
+        started = true;
+        App.clock($('clock'));
+        App.noise($('noise'));
+        App.autoHide($('toolbar'));
+      }
+      App.keepAwake();
+
+      channel = await App.joinChannel(await App.viewerKey(cameraKey), me, {
+        onStatus(ok) { $('net').textContent = ok ? 'En ligne' : 'Reconnexion…'; },
+        onMessage(event, msg) {
+          if (event === 'hello') call(msg.from);
+          const pc = peers.get(msg.from);
+          if (!pc) return;
+          if (event === 'answer') pc.setRemoteDescription(msg.sdp).then(() => App.flushIce(pc)).catch(() => {});
+          if (event === 'ice') App.addIce(pc, msg.candidate);
+        },
+        onPeers(list) {
+          // Un parrain qui ferme Safari disparaît de la présence : on libère son flux.
+          const here = new Set(list.map((p) => p.id));
+          for (const id of [...peers.keys()]) if (!here.has(id)) dropPeer(id);
+        },
+      });
+    };
+
+    async function restartCamera() {
+      stream?.getTracks().forEach((t) => t.stop());
+      stream = await getStream();
+      $('video').srcObject = stream;
+      const track = stream.getVideoTracks()[0];
+      for (const pc of peers.values()) {
+        pc.getSenders().find((s) => !s.track || s.track.kind === 'video')?.replaceTrack(track);
+      }
+    }
+
+    $('flip').onclick = () => {
+      facing = facing === 'environment' ? 'user' : 'environment';
+      restartCamera().catch(() => {});
+    };
+    $('dim').onclick = () => $('blackout').classList.remove('hidden');
+    $('blackout').onclick = () => $('blackout').classList.add('hidden');
+
+    async function stopAll() {
+      if (channel) { channel.send('bye', {}); await channel.close(); channel = null; }
+      [...peers.keys()].forEach(dropPeer);
+      stream?.getTracks().forEach((t) => t.stop());
+      stream = null;
+      $('monitor').classList.add('hidden');
+      $('setup').classList.remove('hidden');
+    }
+    $('stop').onclick = stopAll;
+
+    // Safari coupe la caméra quand l'iPad passe en arrière-plan : on la relance au retour.
+    document.addEventListener('visibilitychange', () => {
+      const track = stream?.getVideoTracks()[0];
+      if (document.visibilityState === 'visible' && channel && track?.readyState === 'ended') restartCamera().catch(() => {});
+    });
+    addEventListener('pagehide', () => { if (channel) channel.send('bye', {}); });
+  })();
+  </script>
+</body>
+</html>
