@@ -93,36 +93,7 @@ const App = {
   },
 
   // ---------- Habillage « vidéosurveillance » ----------
-  clock(el) {
-    const pad = (n) => String(n).padStart(2, '0');
-    const tick = () => {
-      const d = new Date();
-      el.textContent = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ` +
-        `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    };
-    tick();
-    setInterval(tick, 1000);
-  },
-
-  noise(canvas) {
-    const w = (canvas.width = 160), h = (canvas.height = 90);
-    const ctx = canvas.getContext('2d');
-    const img = ctx.createImageData(w, h);
-    let last = 0;
-    const frame = (t) => {
-      if (t - last > 60) {
-        last = t;
-        const d = img.data;
-        for (let i = 0; i < d.length; i += 4) {
-          const v = (Math.random() * 255) | 0;
-          d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255;
-        }
-        ctx.putImageData(img, 0, 0);
-      }
-      requestAnimationFrame(frame);
-    };
-    requestAnimationFrame(frame);
-  },
+  
 
   /** Empêche la mise en veille de l'écran (iPadOS 16.4+). */
   async keepAwake() {
