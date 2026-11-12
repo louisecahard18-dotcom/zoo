@@ -8,13 +8,13 @@ window.CAMERA_CONFIG = {
   //    - SUPABASE_URL : l'adresse « Project URL », par ex. "https://abcdefgh.supabase.co"
   //    - SUPABASE_KEY : la clé « Publishable key » (commence par sb_publishable_…)
   //      ⚠️ JAMAIS la clé « secret » ni « service_role ».
-  SUPABASE_URL: "https://VOTRE-PROJET.supabase.co",
-  SUPABASE_KEY: "VOTRE_CLE_PUBLISHABLE",
+  SUPABASE_URL: "https://rhecwnozxgrzbxkcizzm.supabase.co",
+  SUPABASE_KEY: "sb_publishable_EGYqIULikZzFOZa3GnVU6g_KsPe9fp3",
 
   // 2) Textes affichés en surimpression sur la vidéo
   NOM_ZOO: "Zoo de la Canopée",
   CAMERA_NUMERO: "CAM 01",
-  CAMERA_NOM: "Enclos à renommer",
+  CAMERA_NOM: "Enclos de votre animal parrainé",
 
   // 3) Réseau (optionnel) : serveurs utilisés pour relier l'iPad et l'iPhone.
   //    Les serveurs STUN suffisent la plupart du temps. Si l'image ne passe pas
