@@ -93,7 +93,18 @@ const App = {
   },
 
   // ---------- Habillage « vidéosurveillance » ----------
-  
+  /** Date et heure en surimpression : 12/11/2026 14:03:27 */
+  clock(el) {
+    const pad = (n) => String(n).padStart(2, '0');
+    const tick = () => {
+      const d = new Date();
+      el.textContent = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ` +
+        `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    };
+    tick();
+    setInterval(tick, 1000);
+  },
+
 
   /** Empêche la mise en veille de l'écran (iPadOS 16.4+). */
   async keepAwake() {
