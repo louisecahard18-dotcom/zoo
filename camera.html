@@ -67,10 +67,6 @@
   <!-- Écran de diffusion -->
   <div class="monitor hidden" id="monitor">
     <video id="video" autoplay playsinline muted></video>
-    <div class="tint"></div>
-    <canvas class="noise" id="noise"></canvas>
-    <div class="scanlines"></div>
-    <div class="vignette"></div>
     <div class="corner a"></div><div class="corner b"></div><div class="corner c"></div><div class="corner d"></div>
     <div class="osd">
       <div class="tl"><span class="rec">REC</span> <span id="viewers"></span></div>
@@ -217,7 +213,6 @@
       if (!started) {
         started = true;
         App.clock($('clock'));
-        App.noise($('noise'));
         App.autoHide($('toolbar'));
       }
       App.keepAwake();

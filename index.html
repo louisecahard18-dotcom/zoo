@@ -19,10 +19,6 @@
   <!-- Écran de surveillance -->
   <div class="monitor offline hidden" id="monitor">
     <video id="video" autoplay playsinline muted></video>
-    <div class="tint"></div>
-    <canvas class="noise" id="noise"></canvas>
-    <div class="scanlines"></div>
-    <div class="vignette"></div>
     <div class="corner a"></div><div class="corner b"></div><div class="corner c"></div><div class="corner d"></div>
     <div class="osd">
       <div class="tl"><span class="rec hidden" id="rec">REC</span></div>
@@ -54,7 +50,6 @@
     // ---------- Écran ----------
     $('monitor').classList.remove('hidden');
     App.clock($('clock'));
-    App.noise($('noise'));
     const video = $('video');
     const setStatus = (text) => {
       $('status').classList.toggle('hidden', !text);
