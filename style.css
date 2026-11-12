@@ -1,0 +1,82 @@
+/* Palette du Zoo de la Canopée */
+:root {
+  --vert-fonce: #3E6B48;
+  --vert-clair: #A9CBA4;
+  --vert-pale: #D7E7D0;
+  --beige: #F3ECDC;
+  --beige-fonce: #E3D5B8;
+  --creme: #FCF9F2;
+  --noir: #1C1C1C;
+  --rec: #D64533; /* rouge du voyant REC */
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: var(--creme); color: var(--noir);
+  font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+.hidden { display: none !important; }
+
+/* ---------- Pages claires (réglage iPad, accueil sans QR) ---------- */
+.page { max-width: 640px; margin: 0 auto; padding: max(32px, env(safe-area-inset-top)) 16px 48px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--vert-fonce); font-weight: 700;
+  letter-spacing: .02em; margin-bottom: 20px; }
+.brand::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--vert-fonce);
+  box-shadow: 0 0 0 4px var(--vert-pale); }
+h1 { font-size: 26px; line-height: 1.2; margin: 0 0 8px; }
+p { line-height: 1.5; }
+.sub { color: #4d5a50; margin: 0 0 24px; }
+.card { background: var(--beige); border: 1px solid var(--beige-fonce); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+.card h2 { font-size: 17px; margin: 0 0 10px; color: var(--vert-fonce); }
+.card p { margin: 0 0 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+button, .btn { font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 13px 18px; cursor: pointer;
+  background: var(--vert-fonce); color: var(--creme); text-decoration: none; display: inline-block; }
+button.secondary, .btn.secondary { background: var(--vert-pale); color: var(--noir); }
+button.danger { background: transparent; color: #8a3a2e; border: 1px solid var(--beige-fonce); }
+button:disabled { opacity: .5; cursor: default; }
+.notice { background: var(--vert-pale); border-left: 4px solid var(--vert-fonce); border-radius: 10px; padding: 12px 14px;
+  font-size: 15px; line-height: 1.45; margin-bottom: 16px; }
+.notice.warn { background: #fbe9e4; border-left-color: #b4513f; }
+.qr { background: #fff; border-radius: 12px; padding: 14px; width: min(260px, 100%); margin: 4px 0 14px; }
+.qr svg { display: block; width: 100%; height: auto; }
+.link { font-family: var(--mono); font-size: 12px; word-break: break-all; color: #4d5a50; margin-bottom: 12px; }
+.small { font-size: 13px; color: #5d6a60; }
+
+/* ---------- Écran de surveillance ---------- */
+.monitor { position: fixed; inset: 0; background: var(--noir); overflow: hidden; }
+.monitor video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  filter: grayscale(1) contrast(1.2) brightness(1.05); }
+.monitor .tint { position: absolute; inset: 0; background: var(--vert-fonce); mix-blend-mode: color; opacity: .55; pointer-events: none; }
+.monitor canvas.noise { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .08;
+  mix-blend-mode: screen; pointer-events: none; image-rendering: pixelated; }
+.monitor.offline canvas.noise { opacity: .85; mix-blend-mode: normal; }
+.monitor .scanlines { position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(28,28,28,.3) 0 1px, transparent 1px 3px); }
+.monitor .vignette { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(28,28,28,.8) 100%); }
+.osd { position: absolute; inset: 0; pointer-events: none; font-family: var(--mono); color: var(--creme);
+  text-shadow: 0 0 3px var(--noir), 1px 1px 0 var(--noir); font-size: clamp(12px, 2.4vw, 20px);
+  letter-spacing: .06em; text-transform: uppercase; }
+.osd > div { position: absolute; }
+.osd .tl { top: max(18px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); }
+.osd .tr { top: max(18px, env(safe-area-inset-top)); right: max(20px, env(safe-area-inset-right)); text-align: right; }
+.osd .bl { bottom: max(18px, env(safe-area-inset-bottom)); left: max(20px, env(safe-area-inset-left)); }
+.osd .br { bottom: max(18px, env(safe-area-inset-bottom)); right: max(20px, env(safe-area-inset-right)); text-align: right; }
+.osd .bl .num { color: var(--vert-clair); }
+.osd .rec { color: var(--rec); }
+.osd .rec::before { content: "● "; animation: blink 1s steps(2, start) infinite; }
+.osd .center { inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 24px; }
+.osd .center span { background: var(--vert-fonce); color: var(--creme); padding: 10px 18px; border: 1px solid var(--vert-clair);
+  font-size: clamp(15px, 4vw, 32px); text-shadow: none; white-space: pre-line; line-height: 1.5; }
+.corner { position: absolute; width: 28px; height: 28px; border: 2px solid var(--vert-clair); opacity: .8; }
+.corner.a { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+.corner.b { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+.corner.c { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+.corner.d { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+@keyframes blink { to { visibility: hidden; } }
+
+.toolbar { position: absolute; left: 50%; bottom: calc(56px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  display: flex; gap: 8px; padding: 8px; border-radius: 14px; background: rgba(28,28,28,.6);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: opacity .3s; z-index: 2; }
+.toolbar button { padding: 10px 14px; font-size: 14px; white-space: nowrap; }
+.toolbar.faded { opacity: 0; pointer-events: none; }
+#blackout { position: fixed; inset: 0; background: #000; z-index: 10; }
