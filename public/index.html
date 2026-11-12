@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Caméras des enclos</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="page">
+    <h1 id="title">Caméras des enclos</h1>
+    <p class="sub">Espace parrains : suivez en direct les animaux que vous parrainez.</p>
+
+    <section id="login" class="card hidden">
+      <form class="form" id="loginForm">
+        <label>Code parrain
+          <input id="code" type="password" autocomplete="current-password" required autofocus>
+        </label>
+        <button type="submit">Accéder aux caméras</button>
+        <div class="error" id="err"></div>
+      </form>
+    </section>
+
+    <section id="list" class="hidden">
+      <div class="grid" id="cams"></div>
+      <p class="sub" style="margin-top:24px"><a href="#" id="logout">Changer de code</a></p>
+    </section>
+  </main>
+
+  <script src="/common.js"></script>
+  <script>
+    (async () => {
+      const cfg = await Zoo.config();
+      document.getElementById('title').textContent = `${cfg.zooName} — caméras des enclos`;
+      const login = document.getElementById('login');
+      const list = document.getElementById('list');
+
+      const render = () => {
+        const cams = document.getElementById('cams');
+        cams.replaceChildren(...cfg.enclosures.map((e) => {
+          const a = document.createElement('a');
+          a.className = 'cam-card';
+          a.href = `/watch?e=${encodeURIComponent(e.id)}`;
+          a.innerHTML = `<div class="id"></div><div class="name"></div><span class="badge"></span>`;
+          a.querySelector('.id').textContent = e.cam;
+          a.querySelector('.name').textContent = e.name;
+          const b = a.querySelector('.badge');
+          b.textContent = e.live ? 'EN DIRECT' : 'HORS LIGNE';
+          b.classList.toggle('live', e.live);
+          return a;
+        }));
+      };
+
+      const show = () => {
+        const has = !!Zoo.store.get('sponsorCode');
+        login.classList.toggle('hidden', has);
+        list.classList.toggle('hidden', !has);
+        if (has) render();
+      };
+
+      document.getElementById('loginForm').addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        Zoo.store.set('sponsorCode', document.getElementById('code').value.trim());
+        show();
+      });
+      document.getElementById('logout').addEventListener('click', (ev) => {
+        ev.preventDefault(); Zoo.store.del('sponsorCode'); show();
+      });
+
+      // Rafraîchit l'état « en direct » toutes les 10 s.
+      setInterval(async () => { Object.assign(cfg, await Zoo.config()); if (!list.classList.contains('hidden')) render(); }, 10000);
+      show();
+    })();
+  </script>
+</body>
+</html>
