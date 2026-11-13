@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#3E6B48">
   <meta name="robots" content="noindex">
   <title>Caméra de l'iPad</title>
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <main class="page" id="setup">
@@ -24,29 +24,8 @@
       <p>Ouvre le fichier <b>config.js</b> du dépôt GitHub et colle l'adresse <b>Project URL</b> et la clé <b>Publishable key</b> de ton projet Supabase. Recharge ensuite cette page.</p>
     </section>
 
-    <!-- Première installation -->
-    <section class="card hidden" id="needKey">
-      <h2>Première installation</h2>
-      <p>Cette étape crée la clé secrète de la caméra et le QR code permanent destiné aux parrains. À faire une seule fois, sur l'iPad qui filmera.</p>
-      <button id="createKey">Créer la clé de la caméra</button>
-    </section>
-
-    <section class="card hidden" id="recover">
-      <h2>Tu as déjà distribué un QR code ?</h2>
-      <p>Ne crée pas de nouvelle clé : colle ici le lien du QR code des parrains (il commence par https://… et contient <b>#v=</b>) ou l'ancienne adresse de cette page (avec <b>#cle=</b>). La caméra reprendra le même QR code.</p>
-      <input id="pasteKey" type="url" placeholder="https://…/zoo/#v=…" autocomplete="off" autocapitalize="off"
-        style="width:100%;font:inherit;padding:12px;border-radius:10px;border:1px solid var(--beige-fonce);margin-bottom:10px">
-      <button class="secondary" id="useOldKey">Reprendre ce QR code</button>
-    </section>
-
     <!-- Caméra prête -->
     <div class="hidden" id="ready">
-      <div class="notice" id="bookmarkNotice">
-        <b>Important :</b> l'adresse de cette page contient la clé de la caméra.
-        Ajoute-la à l'écran d'accueil (bouton Partager <span aria-hidden="true">⎙</span> › « Sur l'écran d'accueil ») ou aux favoris, et ouvre-la toujours depuis là.
-        Ne la donne à personne : seul le QR code ci-dessous est destiné aux parrains.
-      </div>
-
       <section class="card">
         <h2>1. Lancer la caméra</h2>
         <p>Pose l'iPad face à l'enclos, branché sur secteur, puis :</p>
@@ -55,21 +34,16 @@
 
       <section class="card">
         <h2>2. QR code des parrains</h2>
-        <p>Il ouvre directement la vidéo dans Safari. Il reste valable tant que tu ne changes pas la clé.</p>
+        <p>QR code <b>unique et permanent</b> : il ouvre directement la vidéo dans Safari et ne change jamais, quel que soit l'iPad utilisé. Imprime-le une fois pour toutes.</p>
         <div class="qr" id="qr"></div>
         <div class="link" id="viewerLink"></div>
-        <p class="small">Code du canal : <b id="channelCode"></b>. Quand la caméra est coupée, l'iPhone affiche « canal … » : les deux codes doivent être identiques.</p>
+        <p class="small">Code du canal : <b id="channelCode"></b> (affiché aussi sur l'iPhone quand la caméra est coupée).</p>
         <div class="row">
           <button class="secondary" id="downloadQr">Télécharger le QR code</button>
           <button class="secondary" id="copyLink">Copier le lien</button>
         </div>
       </section>
 
-      <section class="card">
-        <h2>Changer la clé</h2>
-        <p class="small">En cas de fuite du QR code : une nouvelle clé rend tous les anciens QR codes inutilisables. Il faudra réimprimer le nouveau et remettre la page à l'écran d'accueil.</p>
-        <button class="danger" id="resetKey">Créer une nouvelle clé</button>
-      </section>
     </div>
   </main>
 
@@ -92,79 +66,34 @@
   <!-- Écran noir : l'affichage s'éteint mais la diffusion continue. Toucher pour revenir. -->
   <div id="blackout" class="hidden"></div>
 
-  <script src="config.js?v=6"></script>
+  <script src="config.js?v=7"></script>
   <script src="vendor/supabase-2.118.0.js"></script>
   <script src="vendor/qrcode-generator-2.0.4.js"></script>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
   <script>
   (async () => {
     App.applyLabels();
     const $ = (id) => document.getElementById(id);
-    const show = (id) => {
-      ['needConfig', 'needKey', 'ready'].forEach((x) => $(x).classList.toggle('hidden', x !== id));
-      $('recover').classList.toggle('hidden', id !== 'needKey');
-    };
+    const show = (id) => ['needConfig', 'ready'].forEach((x) => $(x).classList.toggle('hidden', x !== id));
     const error = (msg) => { $('errBox').textContent = msg; $('errBox').classList.toggle('hidden', !msg); };
-    const store = {
-      get: (n) => { try { return localStorage.getItem(n); } catch { return null; } },
-      set: (n, v) => { try { v ? localStorage.setItem(n, v) : localStorage.removeItem(n); } catch {} },
-    };
-
     if (!App.isConfigured()) return show('needConfig');
     if (!window.isSecureContext || !navigator.mediaDevices) {
       error('La caméra ne fonctionne qu’avec une adresse en https://. Ouvre la page depuis le site GitHub Pages.');
     }
 
-    let viewerUrl = '';
-
-    // ---------- Clé de la caméra ----------
-    // Elle est conservée dans l'adresse de la page (#cle=…) ET dans la mémoire de Safari.
-    // Deux cas : la clé caméra (#cle=…), ou seulement la clé des parrains (#parrain=…),
-    // récupérée depuis un QR code déjà distribué.
-    let cameraKey = null, viewerKey = null;
-    const fromHash = { cle: App.hashParam('cle'), parrain: App.hashParam('parrain') };
-    if (App.isKey(fromHash.cle)) await useKey(fromHash.cle);
-    else if (App.isKey(fromHash.parrain)) await useViewerKey(fromHash.parrain);
-    else if (App.isKey(store.get('cameraKey'))) await useKey(store.get('cameraKey'));
-    else if (App.isKey(store.get('viewerKey'))) await useViewerKey(store.get('viewerKey'));
-    else show('needKey');
-
-    $('useOldKey').onclick = () => {
-      const t = $('pasteKey').value.trim();
-      const cle = t.match(/cle=([A-Za-z0-9_-]{32})/), v = t.match(/(?:#v=|parrain=)([A-Za-z0-9_-]{32})/);
-      if (cle) useKey(cle[1]);
-      else if (v) useViewerKey(v[1]);
-      else error('Lien non reconnu : il doit contenir #v= suivi de 32 caractères.');
-    };
-
-    $('createKey').onclick = () => useKey(App.newCameraKey());
-    $('resetKey').onclick = () => {
-      if (confirm('Créer une nouvelle clé ? Les QR codes déjà distribués ne fonctionneront plus.')) useKey(App.newCameraKey());
-    };
-
-    async function useKey(k) {
-      cameraKey = k;
-      store.set('cameraKey', k);
-      store.set('viewerKey', null);
-      history.replaceState(null, '', `#cle=${k}`);
-      await showViewerKey(await App.viewerKey(k));
+    // ---------- QR code permanent ----------
+    // La clé vient de config.js (CLE_QR) : le QR code est le même sur tous les appareils, pour toujours.
+    if (!App.isKey(CFG.CLE_QR)) {
+      show('needConfig');
+      return error('CLE_QR manquante ou invalide dans config.js (32 caractères attendus).');
     }
-    async function useViewerKey(vk) {
-      cameraKey = null;
-      store.set('viewerKey', vk);
-      store.set('cameraKey', null);
-      history.replaceState(null, '', `#parrain=${vk}`);
-      await showViewerKey(vk);
-    }
-    async function showViewerKey(vKey) {
-      error('');
-      viewerKey = vKey;
-      $('channelCode').textContent = await App.channelCode(vKey);
-      viewerUrl = new URL(`./#v=${vKey}`, location.href).href;
-      $('qr').innerHTML = App.qrSvg(viewerUrl);
-      $('viewerLink').textContent = viewerUrl;
-      show('ready');
-    }
+    const viewerKey = CFG.CLE_QR;
+    const viewerUrl = new URL(`./#v=${viewerKey}`, location.href).href;
+    $('channelCode').textContent = await App.channelCode(viewerKey);
+    $('qr').innerHTML = App.qrSvg(viewerUrl);
+    $('viewerLink').textContent = viewerUrl;
+    if (location.hash) history.replaceState(null, '', location.pathname); // anciennes adresses #cle=… : plus utiles
+    show('ready');
 
     $('copyLink').onclick = async () => {
       try { await navigator.clipboard.writeText(viewerUrl); $('copyLink').textContent = 'Lien copié ✓'; }
