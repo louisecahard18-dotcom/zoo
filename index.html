@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1C1C1C">
   <meta name="robots" content="noindex">
   <title>Caméra de l'enclos</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <!-- Affiché quand la page est ouverte sans QR code -->
@@ -32,9 +32,9 @@
     </div>
   </div>
 
-  <script src="config.js"></script>
+  <script src="config.js?v=7"></script>
   <script src="vendor/supabase-2.118.0.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=7"></script>
   <script>
   (async () => {
     App.applyLabels();
@@ -82,6 +82,10 @@
       channel && channel.send('hello', {});
     };
 
+    // Code du canal : doit être identique à celui affiché sur l'iPad.
+    const code = await App.channelCode(key);
+    const offline = `Signal perdu\ncaméra hors ligne\ncanal ${code}`;
+
     channel = await App.joinChannel(key, me, {
       onStatus(ok) {
         if (ok) { if (!connected()) sayHello(true); }
@@ -89,7 +93,7 @@
       },
       onPeers(peers) {
         cameraPresent = peers.some((p) => p.role === 'camera');
-        if (!cameraPresent) { closePc(); setStatus('Signal perdu\ncaméra hors ligne'); }
+        if (!cameraPresent) { closePc(); setStatus(offline); }
         else if (!pc) { setStatus('Connexion à la caméra…'); sayHello(); }
       },
       async onMessage(event, msg) {
@@ -112,7 +116,7 @@
           channel.send('answer', { to: cameraId, sdp: p.localDescription.toJSON() });
         }
         if (event === 'ice' && pc && msg.from === cameraId) App.addIce(pc, msg.candidate);
-        if (event === 'bye' && msg.from === cameraId) { closePc(); setStatus('Signal perdu\ncaméra hors ligne'); }
+        if (event === 'bye' && msg.from === cameraId) { closePc(); setStatus(offline); }
       },
     });
 

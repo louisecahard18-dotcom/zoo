@@ -25,18 +25,13 @@ const App = {
   async sha256(text) {
     return new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)));
   },
-  /** Clé de la caméra : reste sur l'iPad (dans son favori), n'est jamais publiée. */
-  newCameraKey() {
-    return App.b64url(crypto.getRandomValues(new Uint8Array(24)));
-  },
-  /** Clé des parrains (dans le QR code), calculée à partir de la clé caméra.
-   *  On ne peut pas retrouver la clé caméra à partir d'elle. */
-  async viewerKey(cameraKey) {
-    return App.b64url(await App.sha256('canopee-parrain:' + cameraKey)).slice(0, 32);
-  },
   async channelName(viewerKey) {
     const h = await App.sha256('canopee-canal:' + viewerKey);
     return 'cam-' + [...h.slice(0, 16)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  },
+  /** Code court du canal (4 caractères), affiché sur l'iPad et l'iPhone pour vérifier qu'ils correspondent. */
+  async channelCode(viewerKey) {
+    return (await App.channelName(viewerKey)).slice(4, 8).toUpperCase();
   },
   isKey: (k) => typeof k === 'string' && /^[A-Za-z0-9_-]{32}$/.test(k),
   hashParam(name) {

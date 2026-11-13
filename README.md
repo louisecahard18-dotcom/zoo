@@ -7,14 +7,14 @@ L'iPad filme l'enclos. Le parrain scanne un QR code avec son iPhone, et Safari a
 - C'est gratuit : le site est hébergé sur **GitHub Pages**, et **Supabase** sert uniquement à mettre les deux appareils en relation.
 - La vidéo va directement de l'iPad à l'iPhone. Elle ne passe pas par Supabase et n'est jamais enregistrée (le « REC » est décoratif).
 
-## Comment l'accès est protégé
+## Le QR code unique et permanent
 
-- Au premier lancement, l'iPad crée une **clé secrète de caméra**. Elle reste sur l'iPad, dans l'adresse de la page et dans la mémoire de Safari, et n'apparaît **nulle part dans le code publié**.
-- Le **QR code des parrains** contient une autre clé, calculée à partir de la première. Elle permet de regarder, mais pas de retrouver la clé de la caméra.
-- Sans le QR code, impossible de trouver la vidéo : la clé fait 32 caractères aléatoires.
-- Si le QR code circule trop, le bouton **« Créer une nouvelle clé »** sur l'iPad rend tous les anciens QR codes inutilisables.
+- Le QR code ouvre `https://louisecahard18-dotcom.github.io/zoo/#v=…`. La partie après `#v=` est une clé de 32 caractères, enregistrée une fois pour toutes dans `config.js` (`CLE_QR`).
+- **Il ne change jamais**, même si tu redémarres, changes ou remplaces l'iPad, si tu effaces Safari, ou si tu modifies les textes et les couleurs.
+- L'image prête à imprimer est déjà dans le dépôt : **`qr-code-parrains.png`**.
+- Il ne cesserait de fonctionner que si tu modifiais `CLE_QR` dans `config.js`. Ne le fais que si le QR code a circulé auprès de personnes indésirables, et réimprime-le ensuite.
 
-Le code du site peut donc être public sans risque. La clé Supabase « publishable » qu'il contient est faite pour ça.
+**Limite à connaître :** le dépôt est public, donc quelqu'un qui lit le code sur GitHub peut retrouver la clé. Sans le QR code ou sans fouiller le code, personne ne tombe sur la vidéo par hasard. Pour un enclos d'animaux, c'est suffisant.
 
 ---
 
@@ -23,7 +23,8 @@ Le code du site peut donc être public sans risque. La clé Supabase « publisha
 | Fichier | Rôle | À modifier ? |
 |---|---|---|
 | `config.js` | Réglages : Supabase et textes affichés | **Oui, une fois** |
-| `camera.html` | Page de l'iPad : clé, QR code, diffusion | Non |
+| `camera.html` | Page de l'iPad : QR code et diffusion | Non |
+| `qr-code-parrains.png` | QR code permanent, prêt à imprimer | Non |
 | `index.html` | Page du parrain, ouverte par le QR code | Non |
 | `app.js`, `style.css` | Code et couleurs communs | Non |
 | `vendor/` | Bibliothèques Supabase et QR code, copiées pour ne dépendre d'aucun autre site | Non |
@@ -109,8 +110,8 @@ Tu pourras modifier `NOM_ZOO`, `CAMERA_NUMERO` et `CAMERA_NOM` quand tu veux, de
    ```
    https://louisecahard18-dotcom.github.io/zoo/camera.html
    ```
-2. Touche **Créer la clé de la caméra**. L'adresse de la page se termine alors par `#cle=…` : c'est la clé de ta caméra.
-3. **Tout de suite :** touche le bouton **Partager** (carré avec une flèche), puis **Sur l'écran d'accueil**, puis **Ajouter**. À partir de maintenant, ouvre toujours la caméra depuis **cette icône** : elle garde la clé. Ajoute aussi la page à tes favoris, par sécurité.
+2. Ajoute la page à l'écran d'accueil : bouton **Partager** (carré avec une flèche), puis **Sur l'écran d'accueil**, puis **Ajouter**. Tu pourras ensuite ouvrir la caméra d'un seul geste.
+3. Vérifie que le QR code affiché correspond à celui que tu as imprimé. C'est toujours le même.
 4. Touche **Démarrer la caméra** et **autorise** l'accès à la caméra.
 5. L'image apparaît avec l'habillage de surveillance. Touche l'écran pour afficher les boutons :
    - **Changer de caméra** : bascule entre la caméra arrière (par défaut) et la caméra avant.
@@ -128,14 +129,9 @@ Tu pourras modifier `NOM_ZOO`, `CAMERA_NUMERO` et `CAMERA_NOM` quand tu veux, de
 
 ## Étape 4 — Le QR code permanent
 
-Sur la page de l'iPad, dans la carte **« 2. QR code des parrains »** :
+Imprime **`qr-code-parrains.png`** (dans le dépôt GitHub : clique sur le fichier, puis sur le bouton de téléchargement). Tu peux aussi utiliser les boutons **Télécharger le QR code** et **Copier le lien** de la page de l'iPad : ils donnent exactement le même QR code.
 
-- **Télécharger le QR code** : une image prête à imprimer, avec le nom du zoo et de l'enclos.
-- **Copier le lien** : pour l'envoyer par e-mail ou SMS à un parrain.
-
-Tu peux aussi ouvrir la page caméra sur ton ordinateur (en recopiant l'adresse complète avec `#cle=…`) pour télécharger l'image plus facilement.
-
-Le QR code reste valable **tant que tu ne crées pas de nouvelle clé**. Les modifications de textes, de couleurs ou de code ne l'invalident pas.
+Il reste valable **pour toujours**, tant que `CLE_QR` n'est pas modifiée dans `config.js`.
 
 ---
 
@@ -158,10 +154,11 @@ Tourne l'iPhone à l'horizontale pour une image plus grande.
 | iPad : « Étape manquante : Supabase » | `config.js` pas rempli ou mal recopié | Vérifie l'adresse et la clé, avec les guillemets |
 | iPad : « Accès à la caméra refusé » | Autorisation refusée | **Réglages › Safari › Caméra › Autoriser**, puis recharge |
 | iPhone : « Signal perdu — caméra hors ligne » | La caméra de l'iPad n'est pas démarrée, ou l'iPad est en veille | Sur l'iPad, ouvre l'icône et touche **Démarrer la caméra** |
+| iPhone : « caméra hors ligne » alors que l'iPad filme | L'iPad affiche-t-il **« En ligne · canal XXXX »** en bas à droite, avec le même code que l'iPhone ? Si l'iPad affiche « Hors ligne », il n'arrive pas à joindre Supabase | Recharge la page de l'iPad. Si « Hors ligne » persiste, vérifie Supabase (projet en pause, étape 1.6) |
 | iPhone : reste bloqué sur « Connexion à la caméra… » ou « nouvel essai… » | Le réseau bloque la connexion directe (rare, surtout sur les Wi-Fi d'entreprise) | Essaie un autre réseau. Si c'est fréquent, ajoute un serveur TURN (ci-dessous) |
 | L'iPhone ne trouve jamais la caméra, alors qu'elle tourne | Supabase en pause, ou accès public Realtime désactivé | Tableau de bord Supabase : clique sur **Restore project** s'il est en pause, et vérifie l'étape 1.6 |
 | Page introuvable (404) | GitHub Pages pas encore publié ou mauvaise adresse | Attends quelques minutes et vérifie **Settings › Pages** |
-| L'icône de l'iPad redemande de « créer une clé » | Icône créée avant l'étape 2, ou clé effacée | **Ne crée pas de nouvelle clé** si des QR codes sont imprimés. Rouvre plutôt l'adresse `…/camera.html#cle=…` depuis tes favoris |
+| iPad : « CLE_QR manquante ou invalide » | `CLE_QR` effacée ou abîmée dans `config.js` | Remets exactement les 32 caractères qui suivent `#v=` dans le lien du QR code imprimé |
 
 ## Bon à savoir
 
